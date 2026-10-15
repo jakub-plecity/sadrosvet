@@ -1,0 +1,3 @@
+import {z} from "zod";
+export const contactInput=z.object({id:z.string().uuid(),name:z.string().trim().min(1).max(100),email:z.string().trim().email().max(254),_subject:z.string().trim().min(1).max(150).refine(x=>!/[\r\n]/.test(x)),message:z.string().trim().min(1).max(3000),website:z.string().max(200).optional()}).strict();
+export function contactMail(input:{name:string;email:string;_subject:string;message:string}){return {to:"sadrosvet@seznam.cz",replyTo:input.email,subject:`SádroSvět — ${input._subject}`,text:`Zpráva z kontaktního formuláře SádroSvět\n\nJméno: ${input.name}\nE-mail: ${input.email}\nPředmět: ${input._subject}\n\n${input.message}`};}

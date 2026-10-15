@@ -1,0 +1,5 @@
+import type { Metadata } from "next";
+import { LegalPage } from "@/components/legal-page";
+import { legalSections } from "@/lib/legal-content";
+export const metadata:Metadata={title:"Obchodní podmínky · SádroSvět",description:"Obchodní podmínky e-shopu SádroSvět. Platba, doprava, vrácení zboží a reklamace."};
+export default function Terms(){return <LegalPage title="Obchodní podmínky"><p className="legal-intro">Podmínky nákupu sádrových dekorací a dekorativních výrobků ve tvaru svíček v e-shopu SádroSvět.</p><p className="legal-date">Znění ze dne 2. října 2026</p><nav className="legal-contents" aria-label="Obsah obchodních podmínek">{legalSections.map((s,i)=><a key={s.title} href={`#clanek-${i+1}`}>{s.title}</a>)}</nav>{legalSections.map((s,i)=><section className="legal-section" id={`clanek-${i+1}`} key={s.title}><h2>{s.title}</h2>{s.paragraphs.map(p=><p key={p}>{p}</p>)}</section>)}<aside className="legal-related"><h2>Potřebujete vrátit zboží?</h2><p>Použijte <a href="/vraceni-zbozi">formulář pro odstoupení od smlouvy</a>. Jeho použití není povinné.</p></aside></LegalPage>}
