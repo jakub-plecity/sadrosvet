@@ -1,7 +1,8 @@
 import {guard} from "@/lib/server";
 export const dynamic="force-dynamic";
-export async function GET(request:Request){
- const denied=await guard(request);if(denied)return denied;
+export async function GET(){
+ // Navigation GET requests do not normally include an Origin header.
+ const denied=await guard();if(denied)return denied;
  const password=!!process.env.PACKETA_API_PASSWORD?.trim();
  const sender=!!process.env.PACKETA_SENDER_INDICATION?.trim();
  const homeId=process.env.PACKETA_HOME_DELIVERY_CARRIER_ID?.trim()??"";
