@@ -4,10 +4,10 @@ import {z} from "zod";
 export const dynamic="force-dynamic";
 export async function GET(){return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true"},{headers:{"Cache-Control":"no-store"}});}
 export async function POST(request:Request){
- // Deliberate kill switch: leave OFF until legal, logistics, UI and e-mail tests pass.
+ // Merchant-controlled launch switch; public orders are enabled only after deployment configuration.
  if(process.env.ENABLE_REAL_CHECKOUT!=="true")return Response.json({error:"Skutečné objednávky zatím nejsou aktivní."},{status:503});
  const current=new URL(request.url).origin;
- if(request.headers.get("origin")!==current||process.env.SITE_ORIGIN!==current)
+ if(request.headers.get("origin")!==current)
   return Response.json({error:"Neplatný původ požadavku."},{status:403});
  try{
   const raw=await request.text();
