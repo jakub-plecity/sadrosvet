@@ -1,20 +1,22 @@
-# Zásilkovna – firemní účet potvrzen (15. 10. 2026)
+# Zásilkovna – potvrzené zákaznické ceny pro SádroSvět (15. 10. 2026)
 
-Provozovatel SádroSvět potvrdil **aktivní firemní účet Zásilkovna**.
+Provozovatel má aktivní firemní účet Zásilkovna a **výslovně odsouhlasil konečné ceny účtované zákazníkům**:
 
-Oficiální podklady pro smluvní odesílatele: https://www.zasilkovna.cz/dokumenty-pro-partnery (ceník 1. 9. 2026; VOP 10. 10. 2026).
+| Služba | Cena pro zákazníka |
+|---|---:|
+| Zásilkovna na výdejní místo / Z-BOX | 89 Kč |
+| Zásilkovna doručení na adresu | 129 Kč |
+| Dobírka při obou variantách | +29 Kč |
+| Osobní odběr v Chrudimi | 0 Kč (hotově) |
 
-## Princip správného nacenění
+V kódu se částky ukládají v haléřích a počítají serverově: 8900 / 12900 + 2900. Příznak `demoRate` je vypnutý a volba Zásilkovny je dostupná v košíku.
 
-Partnerská **nákupní cena** není totožná s **cenou dopravy pro zákazníka**. Nákupní cena vychází ze smluvního tarifu a příplatků; cenu zákazníkovi stanovuje SádroSvět a musí ji včetně všech poplatků zobrazit před závaznou objednávkou. Nepřebírat ceny služby Mezi námi pro soukromé odesílání.
+**Nejde o smluvní nákupní cenu Zásilkovny:** tato koncová maloobchodní cena byla schválena provozovatelem SádroSvět a může se odvíjet od jeho obchodní marže. Oficiální partnerské dokumenty: https://www.zasilkovna.cz/dokumenty-pro-partnery .
 
-V kódu byly zneplatněny staré demonstrativní částky 79/109 Kč (+29 Kč dobírka). Do potvrzení konečných prodejních cen nejsou Zásilkovna–výdejna a Zásilkovna–adresa volitelné. Balíkovna a osobní odběr zůstávají samostatně.
+Před ostrou expedicí ověřit:
+1. API oprávnění vytváření zásilek a generování štítků, nejen widget mapy výdejen.
+2. Pravidla a místo podání (depo, podací místo nebo svoz), rozměry a hmotnost zásilky.
+3. Funkční doručení objednávky se správným příjemcem a výdejním místem.
+4. U Z-BOXu se dobírka hradí online dle pokynů dopravce, nikoliv v hotovosti na boxu.
 
-## Údaje pro aktivaci
-
-- Konečné zákaznické dopravné včetně DPH/poplatků: Zásilkovna na výdejní místo a Z-BOX, doručení na adresu
-- Konečný poplatek za dobírku, anebo potvrzení zahrnutí dobírky v dopravném
-- Potvrzení režimu podání (podací místo / depo / svoz), hmotností a rozměrů zásilek
-- Ověření, že partner API klíč umožňuje vytváření zásilek a že jsou potvrzené služby doručení na adresu
-
-Následující změna kódu má nahradit null konkrétními, **provozovatelem potvrzenými** cenami v haléřích, nastavit dostupnost a vypnout demoRate. Doplnit ověřený test cen a skutečné založení zásilky/štítku v partnerském API před automatickou expedicí.
+Nastavení zákaznických cen nepředstavuje samo o sobě aktivaci `ENABLE_REAL_CHECKOUT`.
