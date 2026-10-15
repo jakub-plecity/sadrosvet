@@ -22,6 +22,7 @@ export async function POST(request:Request,ctx:{params:Promise<{id:string}>}){
   if(previous.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Zásilka už byla založena nebo se její vytvoření musí nejprve prověřit v klientské sekci. API volání neopakuj.",state:previous.rows[0].state,barcode:previous.rows[0].barcode},{status:409});}
   const tracking=await client.query("SELECT external_tracking_code FROM order_shipments WHERE order_id=$1",[id]);
   if(tracking.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Tato objednávka již má evidovanou zásilku."},{status:409});}
+  if(String(o.service)==="packeta-address"){await client.query("ROLLBACK");begun=false;return Response.json({error:"U doručení na adresu je potřeba nejprve integrovat carrier štítek a číslo dopravce. Tuto zásilku zatím založ ručně v klientské sekci Zásilkovny."},{status:409});}
   if(String(o.service)==="packeta-address"&&!process.env.PACKETA_HOME_DELIVERY_CARRIER_ID){await client.query("ROLLBACK");begun=false;return Response.json({error:"Pro doručení na adresu je potřeba ověřené PACKETA_HOME_DELIVERY_CARRIER_ID."},{status:503});}
   await client.query("INSERT INTO packeta_api_operations(order_id,state) VALUES($1,'creating')",[id]);
   await client.query("COMMIT");begun=false;reserved=true;
