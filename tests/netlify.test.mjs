@@ -27,6 +27,7 @@ process.env.SITE_ORIGIN = 'https://shop.example.test';
 const output = await build({
   stdin: {contents: `
     export * as catalog from './lib/server';
+    export * as checkoutPrices from './lib/checkout';
     export * as login from './app/api/admin/login/route';
     export * as logout from './app/api/admin/logout/route';
     export * as products from './app/api/products/route';
@@ -189,4 +190,18 @@ test('real order stores items, decrements stock once and cancellation returns st
   assert.equal((await postgres.query('SELECT stock FROM products WHERE id=$1',[product])).rows[0].stock,1);
   assert.equal((await postgres.query('SELECT count(*)::int AS n FROM order_email_outbox WHERE order_id=$1',[id])).rows[0].n,3);
  }finally{delete process.env.ENABLE_REAL_CHECKOUT;}
+});
+
+test('approved Packeta retail prices are consistently calculated server-side', () => {
+ const d={payment:'cod',point:{id:'123',name:'Výdejna',address:'Chrudim',zip:'53701'}};
+ const point=app.checkoutPrices.quote(25000,{...d,service:'packeta-point'});
+ assert.equal(point.shippingMinor,8900);
+ assert.equal(point.codMinor,2900);
+ assert.equal(point.totalMinor,36800);
+ assert.equal(point.rateKind,'published-tariff');
+ const address=app.checkoutPrices.quote(25000,{service:'packeta-address',payment:'cod',point:null});
+ assert.equal(address.shippingMinor,12900);
+ assert.equal(address.codMinor,2900);
+ assert.equal(address.totalMinor,40800);
+ for(const id of ['packeta-point','packeta-address'])assert.equal(app.checkoutPrices.shippingServices.find(s=>s.id===id).available,true);
 });
