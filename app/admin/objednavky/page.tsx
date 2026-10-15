@@ -1,5 +1,6 @@
 import {isAdmin,database} from "@/lib/server";
 import Link from "next/link";
+import {OrderStatus} from "@/components/admin/order-status";
 export const dynamic="force-dynamic";
 export const metadata={title:"Objednávky · Administrace SádroSvět"};
 type Order={id:string;order_number:string;status:string;customer_name:string;customer_email:string;service:string;total_minor:number;created_at:string};
@@ -17,7 +18,7 @@ export default async function OrdersPage(){
     <tbody>{orders.map(o=><tr key={o.id}>
      <td style={{padding:8}}>{o.order_number}</td><td style={{padding:8}}>{new Date(o.created_at).toLocaleString("cs-CZ")}</td>
      <td style={{padding:8}}>{o.customer_name}</td><td style={{padding:8}}>{o.customer_email}</td>
-     <td style={{padding:8}}>{o.service}</td><td style={{padding:8}}>{o.status}</td>
+     <td style={{padding:8}}>{o.service}</td><td style={{padding:8}}><OrderStatus id={o.id} status={o.status as "pending"|"confirmed"|"processing"|"shipped"|"ready_for_pickup"|"completed"|"cancelled"}/></td>
      <td style={{padding:8}}>{(o.total_minor/100).toLocaleString("cs-CZ",{style:"currency",currency:"CZK"})}</td>
     </tr>)}</tbody></table></div>}
  </main>;
