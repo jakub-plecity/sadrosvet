@@ -35,6 +35,8 @@ const output = await build({
     export * as upload from './app/api/upload/route';
     export * as images from './app/api/images/[key]/route';
     export * as orders from './app/api/orders/route';
+    export * as realCheckout from './app/api/checkout/route';
+    export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
     export * as contact from './app/api/contact/route';
     export * as email from './app/api/admin/email/route';
     export * as session from './lib/admin-session';
@@ -150,4 +152,41 @@ test('contact form and admin email use Resend server settings and fixed recipien
     assert.equal((await app.email.POST(request('/api/admin/email',{}))).status,200);
     assert.equal((await app.email.POST(request('/api/admin/email',{}))).status,429);
   } finally {globalThis.fetch=savedFetch;}
+});
+
+test('real checkout remains disabled by default and never stores customer details', async () => {
+ const id=randomUUID();
+ const payload={id,contact:{name:'Test Zákazník',email:'customer@example.com',phone:'777123456'},shippingAddress:null,billingAddress:{street:'Testová',house:'1',city:'Chrudim',zip:'53701'},company:null,note:'',items:[{id:'sample-vase',quantity:1}],delivery:{service:'personal-pickup',payment:'cash',point:null},expectedTotalMinor:29000};
+ delete process.env.ENABLE_REAL_CHECKOUT;
+ const response=await app.realCheckout.POST(request('/api/checkout',payload));
+ assert.equal(response.status,503);
+ const rows=await postgres.query('SELECT * FROM customer_orders WHERE id=$1',[id]);
+ assert.equal(rows.rows.length,0);
+});
+
+test('real order stores items, decrements stock once and cancellation returns stock', async () => {
+ const product=randomUUID(),id=randomUUID();
+ await postgres.query("INSERT INTO products(id,name,description,category,price_minor,stock,image,images,status,sample,revision,updated_at) VALUES ($1,'Testovací produkt','Test','Dekorace',15000,1,'/collection.png','[]','active',0,1,$2)",[product,new Date().toISOString()]);
+ const payload={id,contact:{name:'Test Zákazník',email:'customer@example.com',phone:'777123456'},shippingAddress:null,billingAddress:{street:'Testová',house:'1',city:'Chrudim',zip:'53701'},company:null,note:'',items:[{id:product,quantity:1}],delivery:{service:'personal-pickup',payment:'cash',point:null},expectedTotalMinor:15000};
+ process.env.ENABLE_REAL_CHECKOUT='true';
+ try{
+  const response=await app.realCheckout.POST(request('/api/checkout',payload));
+  assert.equal(response.status,201,await response.text());
+  assert.equal((await postgres.query('SELECT stock FROM products WHERE id=$1',[product])).rows[0].stock,0);
+  const retry=await app.realCheckout.POST(request('/api/checkout',payload));
+  assert.equal(retry.status,200);
+  assert.equal((await postgres.query('SELECT stock FROM products WHERE id=$1',[product])).rows[0].stock,0);
+  const modified=await app.realCheckout.POST(request('/api/checkout',{...payload,note:'changed'}));
+  assert.equal(modified.status,409);
+  const other=await app.realCheckout.POST(request('/api/checkout',{...payload,id:randomUUID()}));
+  assert.equal(other.status,409);
+  await signedIn();
+  const cancelled=await app.realAdminStatus.PATCH(request('/api/admin/real-orders/'+id,{status:'cancelled'}),{params:Promise.resolve({id})});
+  assert.equal(cancelled.status,200,await cancelled.text());
+  assert.equal((await postgres.query('SELECT stock FROM products WHERE id=$1',[product])).rows[0].stock,1);
+  const again=await app.realAdminStatus.PATCH(request('/api/admin/real-orders/'+id,{status:'cancelled'}),{params:Promise.resolve({id})});
+  assert.equal(again.status,200);
+  assert.equal((await postgres.query('SELECT stock FROM products WHERE id=$1',[product])).rows[0].stock,1);
+  assert.equal((await postgres.query('SELECT count(*)::int AS n FROM order_email_outbox WHERE order_id=$1',[id])).rows[0].n,3);
+ }finally{delete process.env.ENABLE_REAL_CHECKOUT;}
 });
