@@ -54,7 +54,7 @@ export function CartCheckout({open,onOpenChange,products,cart,quantity,clear,bus
   try{
    const id=idRef.current||crypto.randomUUID();idRef.current=id;
    const payload={id,delivery:{service,payment:isPickup?"cash" as const:"cod" as const,point},items:cartItems.map(p=>({id:p.id,quantity:cart[p.id]})),expectedTotalMinor:total};
-   const realPayload={...payload,contact,shippingAddress:service.endsWith("-address")?address:null,billingAddress:billing,note};
+   const realPayload={...payload,contact,shippingAddress:service.endsWith("-address")?address:null,billingAddress:billing,company:business?company:null,note};
    const response=await fetch(realCheckout?"/api/checkout":"/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(realCheckout?realPayload:payload)});
    const data=await response.json() as {id:string;totalMinor:number;orderNumber?:string;error?:string};
    if(!response.ok)throw new Error(data.error||"Zkoušku se nepodařilo uložit.");
