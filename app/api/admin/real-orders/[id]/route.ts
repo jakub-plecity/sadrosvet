@@ -12,13 +12,18 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
  const client=await (getDatabase().pool as unknown as {connect:()=>Promise<Client>}).connect();let begun=false;
  try{
   await client.query("BEGIN");begun=true;
-  const found=await client.query("SELECT status,customer_email FROM customer_orders WHERE id=$1 FOR UPDATE",[id]);
+  const found=await client.query("SELECT status,customer_email,service FROM customer_orders WHERE id=$1 FOR UPDATE",[id]);
   if(!found.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Objednávka nenalezena."},{status:404});}
   const prev=String(found.rows[0].status);
   if(prev===data.status){await client.query("COMMIT");begun=false;return Response.json({status:prev});}
   if(prev==="cancelled"||prev==="completed"){await client.query("ROLLBACK");begun=false;return Response.json({error:"Uzavřenou objednávku nelze znovu změnit."},{status:409});}
   const allowed:Record<string,string[]>={pending:["confirmed","cancelled"],confirmed:["processing","cancelled"],processing:["shipped","ready_for_pickup","cancelled"],shipped:["completed"],ready_for_pickup:["completed","cancelled"]};
   if(!allowed[prev]?.includes(data.status)){await client.query("ROLLBACK");begun=false;return Response.json({error:"Tento přechod stavu není povolen."},{status:409});}
+  if(data.status==="shipped"&&String(found.rows[0].service).startsWith("packeta-")){
+   const shipment=await client.query("SELECT external_tracking_code FROM order_shipments WHERE order_id=$1 FOR UPDATE",[id]);
+   if(!shipment.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Před odesláním zadej číslo zásilky a její hmotnost."},{status:409});}
+   await client.query("UPDATE order_shipments SET handed_over_at=NOW(),updated_at=NOW() WHERE order_id=$1",[id]);
+  }
   if(data.status==="cancelled"){
    const items=await client.query("SELECT product_id,quantity FROM customer_order_items WHERE order_id=$1 ORDER BY product_id",[id]);
    for(const item of items.rows){
