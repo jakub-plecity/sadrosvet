@@ -1,0 +1,8 @@
+import {guard,database} from "@/lib/server";
+import {mailSettings,sendEmail} from "@/lib/resend";
+export const dynamic="force-dynamic";
+export async function GET(){const denied=await guard();if(denied)return denied;const cfg=mailSettings();return Response.json({configured:!!cfg.RESEND_API_KEY,from:cfg.ORDER_EMAIL_FROM??"",replyTo:cfg.ORDER_EMAIL_REPLY_TO??"",testRecipient:"sadrosvet@seznam.cz"},{headers:{"Cache-Control":"no-store"}});}
+export async function POST(request:Request){const denied=await guard(request);if(denied)return denied;
+ try{const db=database();await db.prepare("CREATE TABLE IF NOT EXISTS email_test_limits (id TEXT PRIMARY KEY, next_send BIGINT NOT NULL)").run();const now=Date.now();const reserved=await db.prepare("INSERT INTO email_test_limits (id,next_send) VALUES ('resend',$1) ON CONFLICT(id) DO UPDATE SET next_send=excluded.next_send WHERE email_test_limits.next_send<=$2").bind(now+60000,now).run();if(!reserved.meta.changes)return Response.json({error:"Další zkušební e-mail lze odeslat za minutu."},{status:429});
+ const id=await sendEmail({to:"sadrosvet@seznam.cz",subject:"SádroSvět — zkouška připojení Resend",text:"Toto je zkušební e-mail odeslaný z administrace SádroSvět. Připojení k Resend přijalo tento požadavek. Nejde o potvrzení objednávky.\n\nSádroSvět\nhttps://sadrosvet.cz",idempotencyKey:`admin-test-${Math.floor(now/60000)}`});return Response.json({id,message:"Resend přijal zprávu. Ověř její doručení ve schránce sadrosvet@seznam.cz, včetně spamu."});
+ }catch(e){return Response.json({error:e instanceof Error?e.message:"Odeslání se nezdařilo."},{status:502});}}
