@@ -5,6 +5,15 @@ import {build} from 'esbuild';
 import {PGlite} from '@electric-sql/pglite';
 import {randomUUID} from 'node:crypto';
 
+test('committed environment template leaves admin credentials empty', async () => {
+  const template = await readFile('.env.example', 'utf8');
+  for (const key of ['ADMIN_SESSION_SECRET', 'LOCAL_ADMIN_PASSWORD', 'LOCAL_ADMIN_USERNAME']) {
+    const assignment = template.split(/\r?\n/).find(line => line.startsWith(`${key}=`));
+    assert.ok(assignment !== undefined, `${key} is documented`);
+    assert.ok(assignment === `${key}=`, `${key} must have no committed value`);
+  }
+});
+
 const postgres = new PGlite();
 const files = new Map();
 const state = globalThis.__netlifyTest = {cookie: '', files, sent: []};
