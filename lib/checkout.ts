@@ -4,9 +4,10 @@ export const shippingServices = [
  {id:"personal-pickup",carrier:"Osobní odběr",label:"Na Kopci 1083, Chrudim · po domluvě",priceMinor:0,codMinor:0,demoRate:false,available:true},
  {id:"balikovna-point",carrier:"Balíkovna",label:"Výdejní místo nebo box",priceMinor:8900,codMinor:1900,demoRate:false,available:true},
  {id:"balikovna-address",carrier:"Balíkovna",label:"Doručení na adresu",priceMinor:11900,codMinor:1900,demoRate:false,available:true},
- // Merchant-approved illustrative amounts for the demo, not carrier tariffs.
- {id:"packeta-point",carrier:"Zásilkovna",label:"Výdejní místo nebo Z-BOX",priceMinor:7900,codMinor:2900,demoRate:true,available:true},
- {id:"packeta-address",carrier:"Zásilkovna",label:"Doručení na adresu",priceMinor:10900,codMinor:2900,demoRate:true,available:true},
+ // Merchant account confirmed. Customer-facing sale prices must be approved separately.
+ // No guessed partner tariffs or consumer "Mezi námi" prices are shown in checkout.
+ {id:"packeta-point",carrier:"Zásilkovna",label:"Výdejní místo nebo Z-BOX",priceMinor:null,codMinor:0,demoRate:true,available:false},
+ {id:"packeta-address",carrier:"Zásilkovna",label:"Doručení na adresu",priceMinor:null,codMinor:0,demoRate:true,available:false},
 ] as const;
 export type ServiceId=typeof shippingServices[number]["id"];
 export const pointSchema=z.object({id:z.string().trim().min(1).max(80),name:z.string().trim().min(1).max(160),address:z.string().trim().min(1).max(240),zip:z.string().regex(/^\d{5}$/)}).strict();
