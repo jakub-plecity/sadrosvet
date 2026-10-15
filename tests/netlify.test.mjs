@@ -39,6 +39,7 @@ const output = await build({
     export * as realCheckout from './app/api/checkout/route';
     export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
     export * as packetaShipment from './app/api/admin/real-orders/[id]/shipment/route';
+    export * as packetaReadiness from './app/api/admin/packeta-readiness/route';
     export * as contact from './app/api/contact/route';
     export * as email from './app/api/admin/email/route';
     export * as session from './lib/admin-session';
@@ -222,4 +223,20 @@ test('Packeta cannot be marked as handed to carrier without a prepared shipment'
  assert.equal((await shipped()).status,200);
  assert.ok((await postgres.query('SELECT handed_over_at FROM order_shipments WHERE order_id=$1',[id])).rows[0].handed_over_at);
  assert.equal((await app.packetaShipment.PUT(request('/api/admin/real-orders/'+id+'/shipment',{trackingCode:'Z987654321',weightGrams:500,note:''}),{params:Promise.resolve({id})})).status,409);
+});
+
+test('Packeta readiness reveals only booleans to signed admin and never creates packets', async () => {
+ const previous=state.cookie;
+ state.cookie='';
+ const denied=await app.packetaReadiness.GET(request('/api/admin/packeta-readiness',{}));
+ assert.notEqual(denied.status,200);
+ await signedIn();
+ const response=await app.packetaReadiness.GET(request('/api/admin/packeta-readiness',{}));
+ assert.equal(response.status,200);
+ const output=await response.json();
+ assert.equal(output.pickupApiReadyForLiveTest,false);
+ assert.equal(output.homeDeliveryAutomaticLabelsReady,false);
+ assert.equal(output.liveApiAuthenticationTested,false);
+ assert.equal(JSON.stringify(output).includes('test-only'),false);
+ state.cookie=previous;
 });
