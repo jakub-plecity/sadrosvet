@@ -14,9 +14,9 @@ export async function POST(request:Request){
   // Do not expose/log raw API response: it may contain private sender account details.
   const raw=(await response.text()).slice(0,12000);
   if(!response.ok)return Response.json({ok:false,code:"HTTP_ERROR",message:"Zásilkovna vrátila HTTP "+response.status+". Ověř dostupnost API."},{status:502});
-  const status=/<(?:[\\w-]+:)?status>\\s*(ok|fault)\\s*<\\/(?:[\\w-]+:)?status>/i.exec(raw)?.[1]?.toLowerCase();
+  const status=new RegExp("<status>\\s*(ok|fault)\\s*</status>","i").exec(raw)?.[1]?.toLowerCase();
   if(status==="ok")return Response.json({ok:true,code:"SENDER_VERIFIED",message:"Připojení funguje. Zásilkovna potvrdila heslo API i existujícího odesílatele. Zásilka nebyla vytvořena."});
-  const faultCode=/<(?:[\\w-]+:)?faultCode>\\s*([^<]{1,80})\\s*<\\/(?:[\\w-]+:)?faultCode>/i.exec(raw)?.[1]?.trim()??"";
+  const faultCode=new RegExp("<faultCode>\\s*([^<]{1,80})\\s*</faultCode>","i").exec(raw)?.[1]?.trim()??"";
   const known=/(IncorrectApiPasswordFault|SenderNotExists|InvalidSenderFault|InvalidEshopFault)/i.exec(raw)?.[1]??"";
   const code=/IncorrectApiPassword/i.test(known+" "+faultCode)?"INVALID_API_PASSWORD":/SenderNotExists|InvalidSender|InvalidEshop/i.test(known+" "+faultCode)?"UNKNOWN_SENDER":"API_REJECTED";
   return Response.json({ok:false,code,message:code==="INVALID_API_PASSWORD"?"Zásilkovna odmítla heslo partnerského API.":code==="UNKNOWN_SENDER"?"Zásilkovna nenašla odesílatele. Ověř přesnou hodnotu Sender Indication.":"Zásilkovna odmítla test odesílatele nebo vrátila neznámou odpověď. Ověř parametry účtu; žádnou zásilku jsme nevytvořili."},{status:502});
