@@ -5,6 +5,9 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Packeta sender indication is a non-secret account label, not an API credential.
+  # Keep scanning enabled for PACKETA_API_PASSWORD and all other secrets.
+  SECRETS_SCAN_OMIT_KEYS = "PACKETA_SENDER_INDICATION"
 
 [[headers]]
   for = "/admin*"
