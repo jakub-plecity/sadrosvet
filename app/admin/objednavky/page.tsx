@@ -22,7 +22,7 @@ export default async function OrdersPage(){
     <tbody>{orders.map(o=><tr key={o.id}>
      <td style={{padding:8}}>{o.order_number}</td><td style={{padding:8}}>{new Date(o.created_at).toLocaleString("cs-CZ")}</td>
      <td style={{padding:8}}>{o.customer_name}</td><td style={{padding:8}}>{o.customer_email}</td>
-     <td style={{padding:8}}>{o.service}</td><td style={{padding:8}}>{o.service.startsWith("packeta-")?<PacketaShipment orderId={o.id} tracking={o.tracking_code??""} grams={o.weight_grams} handedOver={!!o.handed_over_at}/>: "—"}</td><td style={{padding:8}}><OrderStatus id={o.id} status={o.status as "pending"|"confirmed"|"processing"|"shipped"|"ready_for_pickup"|"completed"|"cancelled"}/></td>
+     <td style={{padding:8}}>{o.service}</td><td style={{padding:8}}>{o.service.startsWith("packeta-")?<PacketaShipment orderId={o.id} service={o.service} tracking={o.tracking_code??""} grams={o.weight_grams} handedOver={!!o.handed_over_at}/>: "—"}</td><td style={{padding:8}}><OrderStatus id={o.id} status={o.status as "pending"|"confirmed"|"processing"|"shipped"|"ready_for_pickup"|"completed"|"cancelled"}/></td>
      <td style={{padding:8}}>{(o.total_minor/100).toLocaleString("cs-CZ",{style:"currency",currency:"CZK"})}</td>
     </tr>)}</tbody></table></div>}
  </main>;
