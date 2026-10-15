@@ -8,7 +8,7 @@ export async function GET(_request:Request,ctx:{params:Promise<{id:string}>}){
  const {id}=await ctx.params;
  if(!z.string().uuid().safeParse(id).success)return Response.json({error:"Neplatná objednávka."},{status:400});
  try{
-  const result=await getDatabase().pool.query("SELECT packet_id FROM packeta_api_operations WHERE order_id=$1 AND state='created'",[id]);
+  const result=await getDatabase().pool.query("SELECT p.packet_id FROM packeta_api_operations p JOIN customer_orders o ON o.id=p.order_id WHERE p.order_id=$1 AND p.state='created' AND o.service='packeta-point'",[id]);
   const packetId=result.rows[0]?.packet_id;
   if(!packetId)return Response.json({error:"Zásilka nebyla vytvořena přes API."},{status:404});
   const pdf=await packetaLabelPdf(String(packetId));
