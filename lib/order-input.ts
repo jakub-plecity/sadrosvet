@@ -6,7 +6,7 @@ export const realOrderInput=z.object({
  delivery:deliverySchema,
  shippingAddress:addressSchema.nullable(),
  billingAddress:addressSchema.nullable(),
- company:z.object({name:z.string().trim().min(1).max(160),ico:z.string().regex(/^\\d{8}$/),dic:z.string().trim().max(20)}).strict().nullable(),
+ company:z.object({name:z.string().trim().min(1).max(160),ico:z.string().regex(/^[0-9]{8}$/),dic:z.string().trim().max(20)}).strict().nullable(),
  note:z.string().trim().max(1000).default(""),
  expectedTotalMinor:z.number().int().positive().max(5000000),
  items:z.array(z.object({id:z.string().min(1).max(100),quantity:z.number().int().min(1).max(10)}).strict()).min(1).max(40)
