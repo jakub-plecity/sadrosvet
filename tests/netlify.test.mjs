@@ -38,6 +38,7 @@ const output = await build({
     export * as orders from './app/api/orders/route';
     export * as realCheckout from './app/api/checkout/route';
     export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
+    export * as packetaShipment from './app/api/admin/real-orders/[id]/shipment/route';
     export * as contact from './app/api/contact/route';
     export * as email from './app/api/admin/email/route';
     export * as session from './lib/admin-session';
@@ -204,4 +205,21 @@ test('approved Packeta retail prices are consistently calculated server-side', (
  assert.equal(address.codMinor,2900);
  assert.equal(address.totalMinor,40800);
  for(const id of ['packeta-point','packeta-address'])assert.equal(app.checkoutPrices.shippingServices.find(s=>s.id===id).available,true);
+});
+
+test('Packeta cannot be marked as handed to carrier without a prepared shipment', async () => {
+ const id=randomUUID();
+ await postgres.query(`INSERT INTO customer_orders
+  (id,payment_method,service,customer_name,customer_email,customer_phone,
+  subtotal_minor,shipping_minor,cod_minor,total_minor,status)
+  VALUES ($1,'cod','packeta-address','Test','test@example.com','777123456',10000,12900,2900,25800,'processing')`,[id]);
+ await signedIn();
+ const shipped=()=>app.realAdminStatus.PATCH(request('/api/admin/real-orders/'+id,{status:'shipped'}),{params:Promise.resolve({id})});
+ assert.equal((await shipped()).status,409);
+ const prepared=await app.packetaShipment.PUT(request('/api/admin/real-orders/'+id+'/shipment',{trackingCode:'Z123456789',weightGrams:625,note:''}),{params:Promise.resolve({id})});
+ assert.equal(prepared.status,200,await prepared.text());
+ assert.equal((await postgres.query('SELECT handed_over_at FROM order_shipments WHERE order_id=$1',[id])).rows[0].handed_over_at,null);
+ assert.equal((await shipped()).status,200);
+ assert.ok((await postgres.query('SELECT handed_over_at FROM order_shipments WHERE order_id=$1',[id])).rows[0].handed_over_at);
+ assert.equal((await app.packetaShipment.PUT(request('/api/admin/real-orders/'+id+'/shipment',{trackingCode:'Z987654321',weightGrams:500,note:''}),{params:Promise.resolve({id})})).status,409);
 });
