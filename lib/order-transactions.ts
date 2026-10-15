@@ -38,13 +38,13 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
   const {service,payment,point}=input.delivery;
   const inserted=await client.query(`INSERT INTO customer_orders
    (id,request_hash,payment_method,service,customer_name,customer_email,customer_phone,
-   shipping_address,billing_address,pickup_point,customer_note,subtotal_minor,shipping_minor,cod_minor,total_minor)
-   VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15)
+   shipping_address,billing_address,pickup_point,customer_note,subtotal_minor,shipping_minor,cod_minor,total_minor,company)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15,$16::jsonb)
    RETURNING order_number`,[
     input.id,requestHash,payment,service,input.contact.name,input.contact.email,input.contact.phone,
     input.shippingAddress?JSON.stringify(input.shippingAddress):null,
     input.billingAddress?JSON.stringify(input.billingAddress):null,
-    point?JSON.stringify(point):null,input.note,prices.subtotalMinor,prices.shippingMinor,prices.codMinor,prices.totalMinor
+    point?JSON.stringify(point):null,input.note,prices.subtotalMinor,prices.shippingMinor,prices.codMinor,prices.totalMinor,input.company?JSON.stringify(input.company):null
   ]);
   for(const item of details){
    const updated=await client.query("UPDATE products SET stock=stock-$1,revision=revision+1,updated_at=$3 WHERE id=$2 AND stock >= $1 RETURNING id",
