@@ -20,9 +20,10 @@ async function post(path:"create"|"status",data:Record<string,string>){
  if(values.get("code")!=="0")throw new Error(`Comgate rejected ${path} (code ${values.get("code")??"unknown"}).`);
  return values;
 }
-export async function createComgatePayment(order:{orderNumber:string;priceMinor:number;email:string;name:string;service:string},test=true){
+export async function createComgatePayment(order:{orderNumber:string;priceMinor:number;email:string;name:string;service:string}){
  if(!Number.isSafeInteger(order.priceMinor)||order.priceMinor<1000)throw new Error("Invalid payment amount.");
- const params={test:test?"true":"false",price:String(order.priceMinor),curr:"CZK",label:"SadroSvet",refId:order.orderNumber,method:"ALL",country:"CZ",email:order.email,fullName:order.name,delivery:order.service.endsWith("-point")?"PICKUP_POINT":"HOME_DELIVERY",category:"PHYSICAL_GOODS_ONLY",prepareOnly:"true"};
+ const test=process.env.COMGATE_TEST==="false"?"0":"1";
+ const params={test,price:String(order.priceMinor),curr:"CZK",label:"SadroSvet",refId:order.orderNumber,method:"ALL",country:"CZ",email:order.email,fullName:order.name,delivery:order.service.endsWith("-point")?"PICKUP_POINT":"HOME_DELIVERY",category:"PHYSICAL_GOODS_ONLY",prepareOnly:"true"};
  const result=await post("create",params);
  const redirect=result.get("redirect"),transId=result.get("transId");
  if(!redirect||!transId)throw new Error("Comgate did not return transaction details.");
