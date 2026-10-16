@@ -3,22 +3,10 @@ import "./globals.css";
 import "./storefront.css";
 
 export const metadata: Metadata = {
-  title: "SádroSvět · Dekorace s vlastním tvarem",
-  description: "Návrh katalogu SádroSvět se sádrovými dekoracemi a správou produktů.",
-  icons: {
-    icon: "/logo-sadrosvet.png",
-    shortcut: "/logo-sadrosvet.png",
-  },
+  metadataBase: new URL("https://sadrosvet.cz"),
+  title: {default:"SádroSvět | Sádrové dekorace a dekorativní svíčky",template:"%s"},
+  description: "SádroSvět nabízí sádrové dekorace, vázy, misky, podnosy a dekorativní svíčky pro váš domov. Prohlédněte si kolekci na sadrosvet.cz.",
+  openGraph: {type:"website",locale:"cs_CZ",siteName:"SádroSvět",url:"https://sadrosvet.cz",title:"SádroSvět | Sádrové dekorace",description:"Sádrové dekorace a dekorativní svíčky pro váš domov."},
+  icons: {icon:"/logo-sadrosvet.png",shortcut:"/logo-sadrosvet.png"},
 };
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="cs">
-      <body className="antialiased">{children}</body>
-    </html>
-  );
-}
+export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="cs"><body className="antialiased">{children}</body></html>;}
