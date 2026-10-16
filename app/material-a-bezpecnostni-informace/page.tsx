@@ -1,4 +1,9 @@
 import {LegalPage} from "@/components/legal-page";
 import type {Metadata} from "next";
-export const metadata:Metadata={title:'Materiál a bezpečnostní informace · SádroSvět'};
-export default function Page(){return <LegalPage title="Materiál a bezpečnostní informace"><div className="information-placeholder" aria-label="Obsah stránky bude doplněn"/></LegalPage>;}
+export const metadata:Metadata={title:"Materiál a bezpečnostní informace · SádroSvět",description:"Bezpečné zacházení a údržba sádrových dekorací SádroSvět."};
+export default function Page(){return <LegalPage title="Materiál a bezpečnostní informace">
+<section><h2>Určení výrobků</h2><p>Sádrové výrobky SádroSvět jsou určeny pouze jako interiérové dekorace. Nejsou to hračky ani potraviny a nejsou určeny k přímému styku s potravinami, pokud konkrétní výrobek výslovně neuvádí jinak.</p><p><strong>Dekorativní svíčky jsou výhradně ozdobné: nesmějí se zapalovat.</strong> Nepoužívejte je jako zdroj světla nebo tepla.</p></section>
+<section><h2>Bezpečné zacházení</h2><ul><li>Umístěte dekoraci na stabilní, rovný povrch mimo dosah malých dětí a domácích zvířat.</li><li>Chraňte ji před pádem a nárazy. Při rozbití mohou vzniknout ostré hrany a drobné úlomky.</li><li>Uchovávejte ji mimo otevřený oheň, zdroje vysoké teploty a dlouhodobou vlhkost.</li><li>Poškozený výrobek s ostrými hranami dále nepoužívejte jako dekoraci v dosahu dětí.</li></ul></section>
+<section><h2>Péče o dekorace</h2><p>Prach odstraňujte jemným suchým hadříkem nebo měkkým štětcem. Dekorace nenamáčejte a nemyjte v myčce. Pro zachování vzhledu je nevystavujte dlouhodobě vodě, mrazu ani přímému působení tepla.</p><p>U jednotlivých produktů mohou platit další pokyny podle povrchové úpravy a použitých materiálů. Vždy mají přednost konkrétní informace přiložené k danému výrobku.</p></section>
+<section><h2>Dotazy a reklamace</h2><p>Pokud potřebujete upřesnit použití konkrétního výrobku nebo chcete reklamovat vadu, kontaktujte nás na <a href="mailto:sadrosvet@seznam.cz">sadrosvet@seznam.cz</a>. Práva z vadného plnění a postup reklamace upravují <a href="/obchodni-podminky">obchodní podmínky</a>.</p></section>
+</LegalPage>}
