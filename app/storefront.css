@@ -267,7 +267,7 @@
 .search-input-wrap button { display: grid; place-items: center; width: 44px; min-height: 44px; flex-shrink: 0; }
 .catalog-search > p { margin-top: .5rem; }
 
-.floating-cart { position: fixed; right: max(1.25rem, env(safe-area-inset-right)); bottom: calc(1.25rem + env(safe-area-inset-bottom)); z-index: 40; width: 60px; height: 60px; display: grid; place-items: center; background: #171717; color: #fff; border: 1px solid #fff; border-radius: 50%; box-shadow: 0 4px 18px #0003; }
+.floating-cart { position: fixed; right: max(1.25rem, env(safe-area-inset-right)); bottom: calc(6.75rem + env(safe-area-inset-bottom)); z-index: 40; width: 60px; height: 60px; display: grid; place-items: center; background: #171717; color: #fff; border: 1px solid #fff; border-radius: 50%; box-shadow: 0 4px 18px #0003; }
 .floating-cart:hover { background: #393939; }
 .floating-cart-count { position: absolute; top: -7px; right: -5px; min-width: 26px; height: 26px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: #fff; color: #171717; border: 1px solid #171717; font-size: .875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
