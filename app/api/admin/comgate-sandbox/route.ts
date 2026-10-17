@@ -3,7 +3,12 @@ import {createComgatePayment} from "@/lib/comgate";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store"};
 export async function POST(request:Request){
- const denied=await guard(request);if(denied)return denied;
+ const denied=await guard();if(denied)return denied;
+ // Netlify can rewrite the internal Request URL to its deployment host.
+ // Compare the browser Origin against the canonical public shop origin instead.
+ const origin=request.headers.get("origin");
+ const expected=process.env.SITE_ORIGIN?.replace(/\/$/,"")??"https://sadrosvet.cz";
+ if(origin!==expected)return Response.json({error:"Požadavek nepochází z tohoto webu."},{status:403,headers});
  if(process.env.COMGATE_TEST!=="true")return Response.json({error:"Testovací režim Comgate není zapnutý. Žádná platba nebyla vytvořena."},{status:403,headers});
  // A deliberately isolated sandbox transaction: no customer order, stock reservation or email.
  // Real payment creation remains unavailable to the public.
