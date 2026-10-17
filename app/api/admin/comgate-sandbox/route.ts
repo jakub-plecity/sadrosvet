@@ -1,5 +1,6 @@
 import {guard} from "@/lib/server";
 import {createComgatePayment} from "@/lib/comgate";
+import {getDatabase} from "@netlify/database";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store"};
 export async function POST(request:Request){
@@ -15,6 +16,7 @@ export async function POST(request:Request){
  try{
   const refId="SADRO-TEST-"+crypto.randomUUID().replaceAll("-","").slice(0,16);
   const p=await createComgatePayment({orderNumber:refId,priceMinor:1000,email:"sadrosvet@seznam.cz",name:"SadroSvet Test",service:"balikovna-address"});
+  await getDatabase().pool.query("INSERT INTO comgate_sandbox_transactions(trans_id,ref_id,amount_minor,currency,status) VALUES($1,$2,1000,'CZK','created') ON CONFLICT(trans_id) DO NOTHING",[p.transId,refId]);
   return Response.json({sandbox:true,amountMinor:1000,currency:"CZK",transactionId:p.transId,refId,paymentUrl:p.redirect,
    note:"Testovací transakce není objednávka. Nelze ji automaticky potvrdit v administraci a Comgate notifikace zatím nejsou navázané na testovací ledger."},{status:201,headers});
  }catch(error){
