@@ -12,7 +12,7 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
  const client=await (getDatabase().pool as unknown as {connect:()=>Promise<Client>}).connect();let begun=false;
  try{
   await client.query("BEGIN");begun=true;
-  const found=await client.query("SELECT status,customer_email,service FROM customer_orders WHERE id=$1 FOR UPDATE",[id]);
+  const found=await client.query("SELECT status,customer_email,service,payment_method,payment_status FROM customer_orders WHERE id=$1 FOR UPDATE",[id]);
   if(!found.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Objednávka nenalezena."},{status:404});}
   const prev=String(found.rows[0].status);
   if(prev===data.status){await client.query("COMMIT");begun=false;return Response.json({status:prev});}
@@ -23,6 +23,19 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
    const shipment=await client.query("SELECT external_tracking_code FROM order_shipments WHERE order_id=$1 FOR UPDATE",[id]);
    if(!shipment.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Před odesláním zadej číslo zásilky a její hmotnost."},{status:409});}
    await client.query("UPDATE order_shipments SET handed_over_at=NOW(),updated_at=NOW() WHERE order_id=$1",[id]);
+  }
+  if(data.status==="cancelled"&&found.rows[0].payment_method==="comgate"){
+   // Never refund a paid payment by merely restoring inventory or changing an order status.
+   if(found.rows[0].payment_status!=="unpaid"){
+    await client.query("ROLLBACK");begun=false;
+    return Response.json({error:"Zaplacenou online objednávku nelze zrušit bez ověření vratky u Comgate."},{status:409});
+   }
+   // A paid or pending remote transaction requires reconciliation, not a manual cancellation.
+   const payments=await client.query("SELECT state,trans_id FROM comgate_payments WHERE order_id=$1 FOR UPDATE",[id]);
+   if(payments.rows.some(p=>p.trans_id!==null||p.state!=="created")){
+    await client.query("ROLLBACK");begun=false;
+    return Response.json({error:"U této objednávky existuje platební transakce Comgate. Storno musí proběhnout po ověření jejího stavu."},{status:409});
+   }
   }
   if(data.status==="cancelled"){
    const items=await client.query("SELECT product_id,quantity FROM customer_order_items WHERE order_id=$1 ORDER BY product_id",[id]);
