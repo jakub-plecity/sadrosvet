@@ -50,7 +50,7 @@ export async function probeComgateConnection(){
   response=await fetch(BASE+"/methods",{
    method:"POST",
    headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/x-www-form-urlencoded"},
-   body:new URLSearchParams({merchant,secret,type:"json",curr:"CZK",lang:"cs"}),
+   body:new URLSearchParams({merchant,secret,type:"json",lang:"cs"}),
    cache:"no-store",signal:AbortSignal.timeout(12000)
   });
  }catch{ return {connected:false,diagnostic:"NETWORK_ERROR",methods:0};}
@@ -63,7 +63,9 @@ export async function probeComgateConnection(){
   return {connected:false,diagnostic:code&&/^\\d{1,5}$/.test(code)?"COMGATE_"+code:"INVALID_RESPONSE",methods:0};
  }
  if(!parsed||typeof parsed!=="object")return {connected:false,diagnostic:"INVALID_RESPONSE",methods:0};
- const obj=parsed as {methods?:unknown;code?:unknown};
+ const obj=parsed as {methods?:unknown;code?:unknown;error?:{code?:unknown}};
+ const apiErrorCode=obj.error?.code;
+ if((typeof apiErrorCode==="number"&&Number.isInteger(apiErrorCode))||(typeof apiErrorCode==="string"&&/^\\d{1,5}$/.test(apiErrorCode)))return {connected:false,diagnostic:"COMGATE_"+apiErrorCode,methods:0};
  if(typeof obj.code==="number"&&obj.code!==0)return {connected:false,diagnostic:"COMGATE_"+obj.code,methods:0};
  if(typeof obj.code==="string"&&/^\\d{1,5}$/.test(obj.code)&&obj.code!=="0")return {connected:false,diagnostic:"COMGATE_"+obj.code,methods:0};
  if(!Array.isArray(obj.methods))return {connected:false,diagnostic:"INVALID_RESPONSE",methods:0};
