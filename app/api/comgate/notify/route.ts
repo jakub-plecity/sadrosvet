@@ -41,7 +41,13 @@ export async function POST(request:Request){
   const state=remote.status==="PAID"?"paid":remote.status==="CANCELLED"?"cancelled":remote.status==="PENDING"?"pending":null;
   await client.query("INSERT INTO comgate_payment_events(id,payment_id,reported_state,verified_state,accepted) VALUES($1,$2,$3,$4,$5)",[crypto.randomUUID(),String(p.id),(fields.get("status")??"").slice(0,64),remote.status,valid&&state!==null]);
   if(!valid||!state){await client.query("COMMIT");begun=false;return new Response("Verification mismatch",{status:409,headers:plain})}
-  if(String(p.state)!=="paid"){
+  // Never resurrect a cancelled order after its stock reservation was released.
+  // A late PAID after cancellation requires manual reconciliation/refund.
+  if(String(p.state)==="cancelled"&&state==="paid"){
+   await client.query("COMMIT");begun=false;
+   return new Response("code=0&message=OK",{status:200,headers:plain});
+  }
+  if(String(p.state)!=="paid"&&String(p.state)!=="cancelled"){
    if(state==="paid"){
     await client.query("UPDATE comgate_payments SET state='paid',updated_at=NOW(),verified_at=NOW() WHERE id=$1",[p.id]);
     // Test transactions must NEVER mark real orders paid.
