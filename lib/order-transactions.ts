@@ -53,10 +53,12 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
    await client.query("INSERT INTO customer_order_items (order_id,product_id,name,unit_price_minor,quantity) VALUES($1,$2,$3,$4,$5)",
     [input.id,item.id,item.name,item.unit,item.quantity]);
   }
+  if(payment!=="comgate"){
   await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3)",
     [crypto.randomUUID(),input.id,input.contact.email]);
   await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3) ON CONFLICT(order_id,event_type,recipient) DO NOTHING",
     [crypto.randomUUID(),input.id,"sadrosvet@seznam.cz"]);
+  }
   await client.query("COMMIT");begun=false;
   return {id:input.id,orderNumber:String(inserted.rows[0].order_number),totalMinor:prices.totalMinor,paymentMethod:payment,duplicate:false};
  }catch(error){if(begun)await client.query("ROLLBACK");throw error;}finally{client.release();}

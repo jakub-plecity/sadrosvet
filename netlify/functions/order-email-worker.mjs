@@ -22,6 +22,14 @@ export default async function(){
   try{
    const order=(await db.query("SELECT order_number,customer_name,total_minor,service,payment_method FROM customer_orders WHERE id=$1",[job.order_id])).rows[0];
    if(!order)throw new Error("Order missing");
+   // Never mail a placed confirmation for an unpaid Comgate order, even if queued previously.
+   if(job.event_type==="placed"&&order.payment_method==="comgate"){
+    const status=(await db.query("SELECT payment_status FROM customer_orders WHERE id=$1",[job.order_id])).rows[0]?.payment_status;
+    if(status!=="paid"){
+     await db.query("UPDATE order_email_outbox SET status='failed',retry_after=NOW()+INTERVAL '1 hour' WHERE id=$1",[job.id]);
+     continue;
+    }
+   }
    const items=(await db.query("SELECT name,quantity,unit_price_minor FROM customer_order_items WHERE order_id=$1 ORDER BY name",[job.order_id])).rows;
    const eventLabels={placed:"přijetí",cancelled:"storno",shipped:"odeslání",ready_for_pickup:"připravení k vyzvednutí"};
    const subject="SádroSvět — "+(eventLabels[job.event_type]??"stav")+" objednávky č. "+order.order_number;
@@ -33,7 +41,7 @@ export default async function(){
     ...items.map(i=>i.quantity+"× "+i.name+" — "+(i.quantity*i.unit_price_minor/100).toFixed(2)+" Kč"),
     "Celkem včetně dopravy: "+(order.total_minor/100).toFixed(2)+" Kč",
     "Doprava: "+order.service,
-    "Platba: "+(order.payment_method==="cash"?"Hotově při osobním převzetí":"Dobírka"),
+    "Platba: "+(order.payment_method==="cash"?"Hotově při osobním převzetí":order.payment_method==="comgate"?"Online platba Comgate":"Dobírka"),
     "",
     "Obchodní podmínky: https://sadrosvet.cz/obchodni-podminky",
     "Odstoupení: https://sadrosvet.cz/formular-pro-odstoupeni",
