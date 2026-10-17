@@ -36,6 +36,21 @@ export async function POST(request:Request){
      await client.query("UPDATE customer_orders SET payment_status='paid',updated_at=NOW() WHERE id=$1 AND payment_method='comgate' AND payment_status='unpaid'",[p.order_id]);
    }else{
     await client.query("UPDATE comgate_payments SET state=$2,updated_at=NOW(),verified_at=NOW() WHERE id=$1",[p.id,state]);
+    // CANCELLED is a final state in Comgate. Restore reserved stock at most once,
+    // but only for an unpaid online order. An already paid or cancelled order is immutable here.
+    if(state==="cancelled"&&String(p.payment_status)==="unpaid"&&String(p.order_status)!=="cancelled"){
+     const updated=await client.query("UPDATE customer_orders SET status='cancelled',updated_at=NOW() WHERE id=$1 AND payment_method='comgate' AND payment_status='unpaid' AND status<>'cancelled' RETURNING id",[p.order_id]);
+     if(updated.rows.length){
+      const items=await client.query("SELECT product_id,quantity FROM customer_order_items WHERE order_id=$1 ORDER BY product_id",[p.order_id]);
+      for(const item of items.rows){
+       await client.query("UPDATE products SET stock=stock+$2,revision=revision+1,updated_at=NOW() WHERE id=$1",[item.product_id,item.quantity]);
+      }
+      // Do not send 'cancelled' emails for sandbox transactions.
+      if(p.test===false){
+       await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) SELECT $1,$2,'cancelled',customer_email FROM customer_orders WHERE id=$2 ON CONFLICT(order_id,event_type,recipient) DO NOTHING",[crypto.randomUUID(),p.order_id]);
+      }
+     }
+    }
    }
   }
   await client.query("COMMIT");begun=false;
