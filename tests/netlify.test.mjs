@@ -240,3 +240,17 @@ test('Packeta readiness reveals only booleans to signed admin and never creates 
  assert.equal(JSON.stringify(output).includes('test-only'),false);
  state.cookie=previous;
 });
+
+test('public storefront never offers a test-only Comgate payment even if legacy flags are enabled', async () => {
+ const before = [process.env.ENABLE_REAL_CHECKOUT,process.env.ENABLE_COMGATE_CHECKOUT,process.env.COMGATE_TEST];
+ try {
+  process.env.ENABLE_REAL_CHECKOUT='true';
+  process.env.ENABLE_COMGATE_CHECKOUT='true';
+  process.env.COMGATE_TEST='true';
+  const result=await app.realCheckout.GET();
+  assert.equal(result.status,200);
+  assert.deepEqual(await result.json(),{enabled:true,comgateTestEnabled:false});
+ } finally {
+  [process.env.ENABLE_REAL_CHECKOUT,process.env.ENABLE_COMGATE_CHECKOUT,process.env.COMGATE_TEST]=before;
+ }
+});
