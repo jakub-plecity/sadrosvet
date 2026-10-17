@@ -5,7 +5,7 @@ import {beginComgatePayment} from "@/lib/comgate-order";
 import {comgateConfigured} from "@/lib/comgate";
 export const dynamic="force-dynamic";
 const onlineEnabled=()=>process.env.ENABLE_REAL_CHECKOUT==="true"&&process.env.ENABLE_COMGATE_CHECKOUT==="true"&&process.env.COMGATE_TEST==="false"&&comgateConfigured();
-export async function GET(){return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true",comgateTestEnabled:onlineEnabled()},{headers:{"Cache-Control":"no-store"}});}
+export async function GET(){return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true",comgateEnabled:onlineEnabled()},{headers:{"Cache-Control":"no-store"}});}
 export async function POST(request:Request){
  // Merchant-controlled launch switch; public orders are enabled only after deployment configuration.
  if(process.env.ENABLE_REAL_CHECKOUT!=="true")return Response.json({error:"Skutečné objednávky zatím nejsou aktivní."},{status:503});
