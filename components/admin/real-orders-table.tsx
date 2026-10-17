@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {money} from "@/lib/catalog";
+import {RefreshCw} from "lucide-react";
 type Item={name:string;quantity:number};
 type Order={
  id:string;order_number:string;created_at:string;customer_name:string;
@@ -25,7 +26,7 @@ export function RealOrdersTable(){
  return <section className="admin-table">
   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",flexWrap:"wrap",marginBottom:"1rem"}}>
    <h3>Skutečné zákaznické objednávky</h3>
-   <button type="button" className="button outline" disabled={loading} onClick={()=>void refresh()}>Obnovit objednávky</button>
+   <button type="button" className="button outline" disabled={loading} onClick={()=>void refresh()} aria-label="Obnovit objednávky" title="Obnovit objednávky" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",padding:"0.6rem"}}><RefreshCw size={18} aria-hidden="true"/></button>
   </div>
   {error&&<p role="alert">{error}</p>}
   {loading?<p>Načítání objednávek…</p>:<div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}>
