@@ -34,5 +34,10 @@ export async function createComgatePayment(order:{orderNumber:string;priceMinor:
 export async function verifyComgatePayment(transId:string){
  if(!/^[a-zA-Z0-9-]{6,64}$/.test(transId))throw new Error("Invalid Comgate transaction ID.");
  const result=await post("status",{transId});
- return {transId:result.get("transId"),status:result.get("status"),refId:result.get("refId"),priceMinor:Number(result.get("price")),currency:result.get("curr"),test:result.get("test")==="true"};
+ const priceRaw=result.get("price"); const testRaw=result.get("test"); const merchant=result.get("merchant");
+ if(!priceRaw||!/^\\d+$/.test(priceRaw)||!["true","false"].includes(testRaw??"")||!merchant||merchant!==process.env.COMGATE_MERCHANT?.trim())
+  throw new Error("Comgate status response lacks verified merchant, price or test flag.");
+ const priceMinor=Number(priceRaw);
+ if(!Number.isSafeInteger(priceMinor)||priceMinor<=0)throw new Error("Comgate returned invalid payment amount.");
+ return {transId:result.get("transId"),status:result.get("status"),refId:result.get("refId"),priceMinor,currency:result.get("curr"),test:testRaw==="true"};
 }
