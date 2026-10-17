@@ -249,7 +249,7 @@ test('public storefront never offers a test-only Comgate payment even if legacy 
   process.env.COMGATE_TEST='true';
   const result=await app.realCheckout.GET();
   assert.equal(result.status,200);
-  assert.deepEqual(await result.json(),{enabled:true,comgateTestEnabled:false});
+  assert.deepEqual(await result.json(),{enabled:true,comgateEnabled:false});
  } finally {
   [process.env.ENABLE_REAL_CHECKOUT,process.env.ENABLE_COMGATE_CHECKOUT,process.env.COMGATE_TEST]=before;
  }
