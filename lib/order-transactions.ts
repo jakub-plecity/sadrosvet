@@ -13,11 +13,11 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
   await client.query("BEGIN");begun=true;
   // Serialize identical IDs before any stock mutation.
   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[input.id]);
-  const prior=await client.query("SELECT id,order_number,total_minor,request_hash FROM customer_orders WHERE id=$1",[input.id]);
+  const prior=await client.query("SELECT id,order_number,total_minor,request_hash,payment_method FROM customer_orders WHERE id=$1",[input.id]);
   if(prior.rows.length){
    if(prior.rows[0].request_hash!==requestHash)throw new OrderConflict("Toto ID objednávky už bylo použito s jinými údaji.");
    await client.query("COMMIT");begun=false;
-   return {id:input.id,orderNumber:String(prior.rows[0].order_number),totalMinor:Number(prior.rows[0].total_minor),duplicate:true};
+   return {id:input.id,orderNumber:String(prior.rows[0].order_number),totalMinor:Number(prior.rows[0].total_minor),paymentMethod:String(prior.rows[0].payment_method),duplicate:true};
   }
   // Lock products in a stable order to avoid deadlocks with overlapping carts.
   const ids=[...input.items.map(i=>i.id)].sort();
@@ -58,6 +58,6 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
   await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3) ON CONFLICT(order_id,event_type,recipient) DO NOTHING",
     [crypto.randomUUID(),input.id,"sadrosvet@seznam.cz"]);
   await client.query("COMMIT");begun=false;
-  return {id:input.id,orderNumber:String(inserted.rows[0].order_number),totalMinor:prices.totalMinor,duplicate:false};
+  return {id:input.id,orderNumber:String(inserted.rows[0].order_number),totalMinor:prices.totalMinor,paymentMethod:payment,duplicate:false};
  }catch(error){if(begun)await client.query("ROLLBACK");throw error;}finally{client.release();}
 }
