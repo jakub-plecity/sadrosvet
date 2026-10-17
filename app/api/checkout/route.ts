@@ -3,9 +3,10 @@ import {createRealOrder,OrderConflict,OrderUnavailable} from "@/lib/order-transa
 import {z} from "zod";
 import {beginComgatePayment} from "@/lib/comgate-order";
 import {comgateConfigured} from "@/lib/comgate";
+import {isAdmin} from "@/lib/server";
 export const dynamic="force-dynamic";
 const onlineEnabled=()=>process.env.ENABLE_REAL_CHECKOUT==="true"&&process.env.ENABLE_COMGATE_CHECKOUT==="true"&&process.env.COMGATE_TEST==="false"&&comgateConfigured();
-export async function GET(){return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true",comgateEnabled:onlineEnabled()},{headers:{"Cache-Control":"no-store"}});}
+export async function GET(){const allowed=onlineEnabled()&&(process.env.COMGATE_ADMIN_ONLY==="false"||await isAdmin());return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true",comgateEnabled:allowed},{headers:{"Cache-Control":"private, no-store"}});}
 export async function POST(request:Request){
  // Merchant-controlled launch switch; public orders are enabled only after deployment configuration.
  if(process.env.ENABLE_REAL_CHECKOUT!=="true")return Response.json({error:"Skutečné objednávky zatím nejsou aktivní."},{status:503});
@@ -19,7 +20,7 @@ export async function POST(request:Request){
   const canonical=JSON.stringify(input);
   const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(canonical));
   const hash=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,"0")).join("");
-  if(input.delivery.payment==="comgate"&&!onlineEnabled())
+  if(input.delivery.payment==="comgate"&&(!onlineEnabled()||(process.env.COMGATE_ADMIN_ONLY!=="false"&&!await isAdmin())))
    return Response.json({error:"Online platba je zatím vypnutá."},{status:503});
   const created=await createRealOrder(input,hash);
   if(input.delivery.payment==="comgate"){
