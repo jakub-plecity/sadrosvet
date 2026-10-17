@@ -22,13 +22,13 @@ async function post(path:"create"|"status",data:Record<string,string>){
 }
 export async function createComgatePayment(order:{orderNumber:string;priceMinor:number;email:string;name:string;service:string}){
  if(!Number.isSafeInteger(order.priceMinor)||order.priceMinor<1000)throw new Error("Invalid payment amount.");
- const test=process.env.COMGATE_TEST==="false"?"0":"1";
- const params={test,price:String(order.priceMinor),curr:"CZK",label:"SadroSvet",refId:order.orderNumber,method:"ALL",country:"CZ",email:order.email,fullName:order.name,delivery:order.service.endsWith("-point")?"PICKUP_POINT":"HOME_DELIVERY",category:"PHYSICAL_GOODS_ONLY",prepareOnly:"true"};
+ const test=process.env.COMGATE_TEST==="false"?"false":"true";
+ const params={test,price:String(order.priceMinor),curr:"CZK",label:"SadroSvet",refId:order.orderNumber,method:"ALL",country:"CZ",email:order.email,fullName:order.name,delivery:order.service.endsWith("-point")||order.service==="personal-pickup"?"PICKUP":"HOME_DELIVERY",category:"PHYSICAL_GOODS_ONLY",prepareOnly:"1"};
  const result=await post("create",params);
  const redirect=result.get("redirect"),transId=result.get("transId");
  if(!redirect||!transId)throw new Error("Comgate did not return transaction details.");
  const url=new URL(redirect);
- if(url.protocol!=="https:"||url.hostname!=="payments.comgate.cz")throw new Error("Untrusted payment URL from Comgate.");
+ if(url.protocol!=="https:"||!(url.hostname==="payments.comgate.cz"||url.hostname.endsWith(".comgate.cz")))throw new Error("Untrusted payment URL from Comgate.");
  return {transId,redirect:url.toString()};
 }
 export async function verifyComgatePayment(transId:string){
