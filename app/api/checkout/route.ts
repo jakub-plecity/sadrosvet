@@ -10,8 +10,10 @@ export async function GET(){const allowed=onlineEnabled()&&(process.env.COMGATE_
 export async function POST(request:Request){
  // Merchant-controlled launch switch; public orders are enabled only after deployment configuration.
  if(process.env.ENABLE_REAL_CHECKOUT!=="true")return Response.json({error:"Skutečné objednávky zatím nejsou aktivní."},{status:503});
- const current=new URL(request.url).origin;
- if(request.headers.get("origin")!==current)
+ // Netlify can forward requests using an internal URL; compare the browser Origin
+ // against our configured public storefront origin, not request.url.
+ const trusted=process.env.SITE_ORIGIN;
+ if(!trusted||request.headers.get("origin")!==trusted)
   return Response.json({error:"Neplatný původ požadavku."},{status:403});
  try{
   const raw=await request.text();
