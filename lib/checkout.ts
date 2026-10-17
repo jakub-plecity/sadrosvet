@@ -16,9 +16,9 @@ export function demoDeliveryPoints(service:ServiceId):DeliveryPoint[]{
  if(!carrier||(service==="balikovna-point"||service==="packeta-point")||!service.endsWith("-point"))return [];
  return ["výdejna","box"].map((kind,i)=>({id:`demo-${service}-${i}`,name:`${carrier} · ukázková ${kind==="box"?"volba boxu":"výdejna"}`,address:"Smyšlené místo pro vyzkoušení košíku",zip:"10000"}));
 }
-export const deliverySchema=z.object({service:z.enum(["personal-pickup","balikovna-point","balikovna-address","packeta-point","packeta-address"]),payment:z.enum(["cod","cash"]),point:pointSchema.nullable()}).strict().superRefine((data,ctx)=>{
- if(data.service==="personal-pickup"&&(data.point!==null||data.payment!=="cash"))ctx.addIssue({code:"custom",message:"Osobní odběr vyžaduje platbu hotově bez výdejního místa."});
- if(data.service!=="personal-pickup"&&data.payment!=="cod")ctx.addIssue({code:"custom",message:"Pro dopravu vyber dobírku."});
+export const deliverySchema=z.object({service:z.enum(["personal-pickup","balikovna-point","balikovna-address","packeta-point","packeta-address"]),payment:z.enum(["cod","cash","comgate"]),point:pointSchema.nullable()}).strict().superRefine((data,ctx)=>{
+ if(data.service==="personal-pickup"&&(data.point!==null||!["cash","comgate"].includes(data.payment)))ctx.addIssue({code:"custom",message:"Osobní odběr vyžaduje platbu hotově bez výdejního místa."});
+ if(data.service!=="personal-pickup"&&!["cod","comgate"].includes(data.payment))ctx.addIssue({code:"custom",message:"Pro dopravu vyber dobírku."});
  if(data.service.endsWith("-point")&&!data.point)ctx.addIssue({code:"custom",message:"Vyber výdejní místo."});
  if(data.service==="packeta-point"&&data.point&&!/^\d+$/.test(data.point.id))ctx.addIssue({code:"custom",message:"Vyber místo v oficiální mapě Zásilkovny."});
  if(data.service.endsWith("-address")&&data.point)ctx.addIssue({code:"custom",message:"Doručení na adresu nesmí obsahovat výdejní místo."});
@@ -32,7 +32,7 @@ export function quote(subtotalMinor:number,delivery:Delivery){
  const shippingMinor=deliveryPrice(delivery.service);
  if(shippingMinor===null)throw new Error("Tato doprava zatím není dostupná.");
  const selected=shippingServices.find(s=>s.id===delivery.service)!;
- const codMinor=selected.codMinor;
+ const codMinor=delivery.payment==="cod"?selected.codMinor:0;
  return {subtotalMinor,shippingMinor,codMinor,totalMinor:subtotalMinor+shippingMinor+codMinor,rateKind:selected.demoRate?"illustrative":"published-tariff"};
 }
 export function deliveryLabel(raw:string){
