@@ -45,18 +45,27 @@ export async function verifyComgatePayment(transId:string){
 /** Verify configured Merchant API credentials without creating a payment. */
 export async function probeComgateConnection(){
  const {merchant,secret}=credentials();
- const response=await fetch(BASE+"/methods",{
-  method:"POST",
-  headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/json"},
-  body:new URLSearchParams({merchant,secret,type:"json"}),
-  cache:"no-store",signal:AbortSignal.timeout(12000)
- });
- if(!response.ok)throw new Error("Comgate API HTTP "+response.status);
- const raw=await response.text();
- if(raw.length>300000)throw new Error("Comgate API response too large.");
- let result:unknown;
- try{result=JSON.parse(raw)}catch{throw new Error("Comgate API response is not JSON.");}
- if(!result||typeof result!=="object"||!Array.isArray((result as {methods?:unknown}).methods))
-  throw new Error("Comgate API returned an unexpected methods response.");
- return {authenticated:true,availablePaymentMethods:(result as {methods:unknown[]}).methods.length};
+ let response:Response;
+ try{
+  response=await fetch(BASE+"/methods",{
+   method:"POST",
+   headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/x-www-form-urlencoded"},
+   body:new URLSearchParams({merchant,secret,type:"json",curr:"CZK",lang:"cs"}),
+   cache:"no-store",signal:AbortSignal.timeout(12000)
+  });
+ }catch{ return {connected:false,diagnostic:"NETWORK_ERROR",methods:0};}
+ const status=response.status;
+ if(!response.ok)return {connected:false,diagnostic:"HTTP_"+status,methods:0};
+ const raw=(await response.text()).slice(0,150000);
+ let parsed:unknown;
+ try{parsed=JSON.parse(raw)}catch{
+  const code=new URLSearchParams(raw).get("code");
+  return {connected:false,diagnostic:code&&/^\\d{1,5}$/.test(code)?"COMGATE_"+code:"INVALID_RESPONSE",methods:0};
+ }
+ if(!parsed||typeof parsed!=="object")return {connected:false,diagnostic:"INVALID_RESPONSE",methods:0};
+ const obj=parsed as {methods?:unknown;code?:unknown};
+ if(typeof obj.code==="number"&&obj.code!==0)return {connected:false,diagnostic:"COMGATE_"+obj.code,methods:0};
+ if(typeof obj.code==="string"&&/^\\d{1,5}$/.test(obj.code)&&obj.code!=="0")return {connected:false,diagnostic:"COMGATE_"+obj.code,methods:0};
+ if(!Array.isArray(obj.methods))return {connected:false,diagnostic:"INVALID_RESPONSE",methods:0};
+ return {connected:true,diagnostic:"OK",methods:obj.methods.length};
 }
