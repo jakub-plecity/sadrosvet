@@ -41,3 +41,22 @@ export async function verifyComgatePayment(transId:string){
  if(!Number.isSafeInteger(priceMinor)||priceMinor<=0)throw new Error("Comgate returned invalid payment amount.");
  return {transId:result.get("transId"),status:result.get("status"),refId:result.get("refId"),priceMinor,currency:result.get("curr"),test:testRaw==="true"};
 }
+
+/** Verify configured Merchant API credentials without creating a payment. */
+export async function probeComgateConnection(){
+ const {merchant,secret}=credentials();
+ const response=await fetch(BASE+"/methods",{
+  method:"POST",
+  headers:{"Content-Type":"application/x-www-form-urlencoded","Accept":"application/json"},
+  body:new URLSearchParams({merchant,secret,type:"json"}),
+  cache:"no-store",signal:AbortSignal.timeout(12000)
+ });
+ if(!response.ok)throw new Error("Comgate API HTTP "+response.status);
+ const raw=await response.text();
+ if(raw.length>300000)throw new Error("Comgate API response too large.");
+ let result:unknown;
+ try{result=JSON.parse(raw)}catch{throw new Error("Comgate API response is not JSON.");}
+ if(!result||typeof result!=="object"||!Array.isArray((result as {methods?:unknown}).methods))
+  throw new Error("Comgate API returned an unexpected methods response.");
+ return {authenticated:true,availablePaymentMethods:(result as {methods:unknown[]}).methods.length};
+}
