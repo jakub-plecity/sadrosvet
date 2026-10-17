@@ -22,6 +22,9 @@ export async function POST(request:Request){
   const hash=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,"0")).join("");
   if(input.delivery.payment==="comgate"&&(!onlineEnabled()||(process.env.COMGATE_ADMIN_ONLY!=="false"&&!await isAdmin())))
    return Response.json({error:"Online platba je zatím vypnutá."},{status:503});
+  // Reject unsupported Comgate amounts BEFORE an order is persisted or stock reserved.
+  if(input.delivery.payment==="comgate"&&input.expectedTotalMinor<1000)
+   return Response.json({error:"Minimální částka online platby je 10 Kč. Objednávka nebyla vytvořena."},{status:400});
   const created=await createRealOrder(input,hash);
   if(input.delivery.payment==="comgate"){
    // The same order UUID and request hash make checkout retries idempotent.
