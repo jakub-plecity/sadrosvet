@@ -16,8 +16,8 @@ export async function GET(request:Request){
   const o=order.rows[0];
   return Response.json({
    order:{id:o.id,number:String(o.order_number),status:o.status,paymentMethod:o.payment_method,paymentStatus:o.payment_status,totalMinor:o.total_minor,createdAt:o.created_at},
-   paymentAttempt:p.rows.map(x=>({state:x.state,transactionId:x.trans_id,test:x.test,createdAt:x.created_at})),
-   items:items.rows.map(x=>({productId:x.product_id,name:x.name,orderedQuantity:x.quantity,currentStock:x.current_stock})),
+   paymentAttempt:p.rows.map((x:Record<string,unknown>)=>({state:x.state,transactionId:x.trans_id,test:x.test,createdAt:x.created_at})),
+   items:items.rows.map((x:Record<string,unknown>)=>({productId:x.product_id,name:x.name,orderedQuantity:x.quantity,currentStock:x.current_stock})),
    warning:"Aktuální sklad neprokazuje historické ruční úpravy. Tento endpoint nic nemění."
   },{headers});
  }catch(e){console.error("Comgate order investigation failed",e);return Response.json({error:"Kontrolu objednávky nelze dokončit."},{status:503,headers})}
