@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import {money} from "@/lib/catalog";
 import {RefreshCw} from "lucide-react";
+import {OrderStatus} from "@/components/admin/order-status";
 type Item={name:string;quantity:number};
 type Order={
  id:string;order_number:string;created_at:string;customer_name:string;
@@ -38,7 +39,7 @@ export function RealOrdersTable(){
     <td>{(typeof o.items==="string"?JSON.parse(o.items) as Item[]:o.items).map(i=>i.quantity+"× "+i.name).join(", ")}</td>
     <td>{money(o.total_minor)}</td>
     <td>{o.payment_method==="comgate"?"Comgate":o.payment_method==="cod"?"Dobírka":"Hotově"} — {o.payment_status==="paid"?"Zaplaceno":"Nezaplaceno"}</td>
-    <td>{o.status}</td>
+    <td><OrderStatus key={o.id+":"+o.status} id={o.id} status={o.status as "pending"|"confirmed"|"processing"|"shipped"|"ready_for_pickup"|"completed"|"cancelled"}/></td>
    </tr>)}</tbody>
   </table>{!orders.length&&<p>Žádné skutečné objednávky.</p>}</div>}
  </section>
