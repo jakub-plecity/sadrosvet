@@ -22,7 +22,20 @@ export async function POST(request:Request){
  try{
   await client.query("BEGIN");begun=true;
   const q=await client.query("SELECT p.*,o.payment_status,o.total_minor,o.order_number,o.status AS order_status FROM comgate_payments p JOIN customer_orders o ON o.id=p.order_id WHERE p.trans_id=$1 FOR UPDATE OF p,o",[transId]);
-  if(!q.rows.length){await client.query("ROLLBACK");begun=false;return new Response("Unknown transaction",{status:404,headers:plain})}
+  if(!q.rows.length){
+   // Isolated sandbox payments do not belong to customer_orders or affect stock.
+   const sandbox=await client.query("SELECT * FROM comgate_sandbox_transactions WHERE trans_id=$1 FOR UPDATE",[transId]);
+   if(sandbox.rows.length){
+    const t=sandbox.rows[0];
+    const valid=remote.test===true&&remote.transId===transId&&remote.refId===String(t.ref_id)&&remote.priceMinor===Number(t.amount_minor)&&remote.currency===String(t.currency);
+    const state=remote.status==="PAID"?"paid":remote.status==="CANCELLED"?"cancelled":remote.status==="PENDING"?"pending":null;
+    if(!valid||!state){await client.query("ROLLBACK");begun=false;return new Response("Verification mismatch",{status:409,headers:plain})}
+    // Success cannot be undone by a delayed pending/cancel notification.
+    await client.query("UPDATE comgate_sandbox_transactions SET status=CASE WHEN status='paid' THEN 'paid' ELSE $2 END,verified_at=NOW() WHERE trans_id=$1",[transId,state]);
+    await client.query("COMMIT");begun=false;return new Response("code=0&message=OK",{status:200,headers:plain});
+   }
+   await client.query("ROLLBACK");begun=false;return new Response("Unknown transaction",{status:404,headers:plain});
+  }
   const p=q.rows[0];
   const valid=remote.transId===transId&&remote.refId===String(p.ref_id)&&remote.priceMinor===Number(p.amount_minor)&&remote.priceMinor===Number(p.total_minor)&&remote.currency==="CZK"&&remote.currency===String(p.currency)&&remote.test===Boolean(p.test);
   const state=remote.status==="PAID"?"paid":remote.status==="CANCELLED"?"cancelled":remote.status==="PENDING"?"pending":null;
