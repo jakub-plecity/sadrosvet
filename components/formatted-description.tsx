@@ -18,7 +18,7 @@ export function FormattedDescription({value}:{value?:string}){
   let line=raw,alignment:"left"|"center"|"right"="left";
   const align=line.match(/^\[align=(left|center|right)\](.*?)\[\/align\]$/);
   if(align){alignment=align[1] as typeof alignment;line=align[2];}
-  const style={{textAlign:alignment}};
+  const style={textAlign:alignment};
   if(!line.trim())return <div key={index} className="description-break"/>;
   if(line.startsWith("## "))return <h4 key={index} style={style}>{inline(line.slice(3))}</h4>;
   if(line.startsWith("- "))return <p key={index} className="description-list-line" style={style}>• {inline(line.slice(2))}</p>;
