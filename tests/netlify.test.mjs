@@ -96,6 +96,14 @@ test('admin requires a signed session; spoofed old hosting identity headers gran
   state.cookie += 'tampered'; assert.equal(await app.catalog.isAdmin(), false);
 });
 
+test('login accepts the public hostname forwarded by Netlify, but blocks cross-origin submissions', async () => {
+ const credentials = {username: process.env.LOCAL_ADMIN_USERNAME,password: process.env.LOCAL_ADMIN_PASSWORD};
+ const forwarded = new Request(origin + '/api/admin/login', {method:'POST',headers:{origin:'https://sadrosvet.cz','x-forwarded-host':'sadrosvet.cz','content-type':'application/json'},body:JSON.stringify(credentials)});
+ assert.equal((await app.login.POST(forwarded)).status,200);
+ const forged = new Request(origin + '/api/admin/login', {method:'POST',headers:{origin:'https://evil.example.test','x-forwarded-host':'sadrosvet.cz','content-type':'application/json'},body:JSON.stringify(credentials)});
+ assert.equal((await app.login.POST(forged)).status,403);
+});
+
 test('login enforces origin, password, HttpOnly secure cookies, logout and persistent rate limits on Netlify client IP', async () => {
   const credentials = {username: process.env.LOCAL_ADMIN_USERNAME, password: process.env.LOCAL_ADMIN_PASSWORD};
   assert.equal((await app.login.POST(request('/api/admin/login', credentials, {origin:'https://evil.example.test'}))).status, 403);
