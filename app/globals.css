@@ -337,3 +337,7 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
 
 /* Keep catalog product photos in their original colors. */
 .collection .product-gallery .product-photo img{filter:none!important}
+
+/* Admin product drag handle */
+.drag-handle{display:inline-flex;align-items:center;justify-content:center;padding:7px;cursor:grab;color:#62625f;touch-action:none;user-select:none;border-radius:4px}
+.drag-handle:active{cursor:grabbing}.drag-handle:hover{background:#efefeb;color:#242421}
