@@ -1,9 +1,46 @@
 import {LegalPage} from "@/components/legal-page";
 import type {Metadata} from "next";
-export const metadata:Metadata={title:"Materiál a bezpečnostní informace · SádroSvět",description:"Bezpečné zacházení a údržba sádrových dekorací SádroSvět."};
-export default function Page(){return <LegalPage title="Materiál a bezpečnostní informace">
-<section><h2>Určení výrobků</h2><p>Sádrové výrobky SádroSvět jsou určeny pouze jako interiérové dekorace. Nejsou to hračky ani potraviny a nejsou určeny k přímému styku s potravinami, pokud konkrétní výrobek výslovně neuvádí jinak.</p><p><strong>Dekorativní svíčky jsou výhradně ozdobné: nesmějí se zapalovat.</strong> Nepoužívejte je jako zdroj světla nebo tepla.</p></section>
-<section><h2>Bezpečné zacházení</h2><ul><li>Umístěte dekoraci na stabilní, rovný povrch mimo dosah malých dětí a domácích zvířat.</li><li>Chraňte ji před pádem a nárazy. Při rozbití mohou vzniknout ostré hrany a drobné úlomky.</li><li>Uchovávejte ji mimo otevřený oheň, zdroje vysoké teploty a dlouhodobou vlhkost.</li><li>Poškozený výrobek s ostrými hranami dále nepoužívejte jako dekoraci v dosahu dětí.</li></ul></section>
-<section><h2>Péče o dekorace</h2><p>Prach odstraňujte jemným suchým hadříkem nebo měkkým štětcem. Dekorace nenamáčejte a nemyjte v myčce. Pro zachování vzhledu je nevystavujte dlouhodobě vodě, mrazu ani přímému působení tepla.</p><p>U jednotlivých produktů mohou platit další pokyny podle povrchové úpravy a použitých materiálů. Vždy mají přednost konkrétní informace přiložené k danému výrobku.</p></section>
-<section><h2>Dotazy a reklamace</h2><p>Pokud potřebujete upřesnit použití konkrétního výrobku nebo chcete reklamovat vadu, kontaktujte nás na <a href="mailto:sadrosvet@seznam.cz">sadrosvet@seznam.cz</a>. Práva z vadného plnění a postup reklamace upravují <a href="/obchodni-podminky">obchodní podmínky</a>.</p></section>
-</LegalPage>}
+
+export const metadata:Metadata={
+ title:"Materiál a bezpečnostní informace · SádroSvět",
+ description:"Informace o použitých materiálech a bezpečnostní pokyny pro svíčky a dekorace SádroSvět."
+};
+
+const safetyInstructions=[
+ "Všechny svíčky jsou určeny pro dospělé svéprávné osoby.",
+ "Udržujte svíčku mimo dosah dětí a domácích zvířat, mimo přímé sluneční záření (při vysokých teplotách může vosk měknout).",
+ "Svíčky nejsou určeny ke konzumaci.",
+ "Svíčku vždy umístěte na stabilní, rovný a nehořlavý povrch.",
+ "Pokud svíčka obsahuje sušené květiny, bylinky nebo jiné přírodní dekorace, které by mohly zasahovat do ohně, před zapálením je odstraňte.",
+ "Při prvním zapálení nechte vosk rozpustit v celé ploše nádoby, aby svíčka mohla využít všechen vosk a nedocházelo k tunelování.",
+ "Knot před každým zapálením zkraťte na cca 3–5 mm, aby nebyl plamen příliš vysoký a svíčka zbytečně nekouřila.",
+ "Udržujte povrch svíčky bez nečistot.",
+ "Po zapálení se svíčkou nemanipulujte a nepřenášejte ji; nádoba i vosk mohou být velmi horké.",
+ "Nenechávejte svíčku hořet bez dozoru, v průvanu nebo poblíž hořlavých předmětů.",
+ "Doporučená doba hoření je 2–4 hodiny.",
+ "Nikdy nehaste svíčku vodou. Horký vosk může vystříknout."
+];
+
+export default function Page(){
+ return <LegalPage title="Materiál a bezpečnostní informace">
+  <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
+   <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Informace o použitých materiálech</h2>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Jak náš název napovídá, SádroSvět pro Vás vyrábí především sádrové dekorace. Některé naše výrobky plníme voskem nebo malujeme, a přinášíme tak další dílek k vytvoření Vaší ideální výzdoby.</p>
+   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Keramická sádra</h3>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">K tvoření našich výrobků používáme nevypalovanou keramickou sádru, která je oproti běžné sádře těžší, pevnější a bělejší. Snáší také zahřátí při používání svíčky.</p>
+   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Sójový vosk a knoty</h3>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Svíčky vyrábíme z přírodního sójového vosku s bavlněnými nebo dřevěnými knoty. Jedná se o rostlinný vosk bez ropných produktů, který hoří pomaleji a produkuje méně sazí. Vonné směsi do našich svíček nepoužíváme.</p>
+   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Dekorativní svíčky</h3>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Některé naše svíčky mají především dekorační účel a jsou zdobeny námi sbíranými a sušenými přírodními materiály a voskovými ozdobami. <strong>Dekorativní svíčky označené jako výhradně ozdobné nezapalujte.</strong> U svíček výslovně určených k hoření si před zapálením pečlivě přečtěte bezpečnostní informace níže i pokyny přiložené k výrobku.</p>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Podle informací výrobce jsou všechny používané materiály zdravotně nezávadné.</p>
+  </section>
+  <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
+   <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Bezpečnostní informace pro používání svíček</h2>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Následující pokyny vycházejí z bezpečnostních informací přiložených k výrobkům. Pokyny pro hoření platí pouze pro svíčky, u kterých je zapálení výslovně povoleno. <strong>Výhradně dekorativní svíčky nezapalujte.</strong></p>
+   <ul className="my-5 list-disc space-y-3 rounded-xl bg-stone-50 py-5 pl-10 pr-5 text-base leading-7 text-stone-800">
+    {safetyInstructions.map(instruction=><li key={instruction}>{instruction}</li>)}
+   </ul>
+   <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Na štítcích umístěných na svíčkách se můžete setkat s bezpečnostními symboly. Vždy dodržujte jejich význam i konkrétní pokyny uvedené na štítku.</p>
+  </section>
+ </LegalPage>;
+}
