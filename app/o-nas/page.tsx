@@ -18,4 +18,4 @@ export default function About(){return <><SiteHeader/><main className="about-pag
 <article className="about-chapter"><span className="eyebrow">MATERIÁL A TVOŘENÍ</span><h2>Ze sádry, s fantazií.</h2><p>{paragraphs[2]}</p><div className="about-highlight"><h3>Dá se na ni malovat!</h3><p>{paragraphs[3]}</p></div></article>
 <article className="about-chapter"><span className="eyebrow">NAŠE VÝROBKY</span><h2>Jeden kousek, nebo celý set.</h2><p>{paragraphs[4]}</p><a className="button blue" href="/#kolekce">Prohlédnout kolekci</a></article>
 <article className="about-chapter"><span className="eyebrow">POTKEJME SE</span><h2>Rádi Vás uvidíme!</h2><p>{paragraphs[5]}</p><p>{paragraphs[6]}</p><p className="about-signoff">{paragraphs[7]}</p></article>
-</section><section className="about-connect"><span className="eyebrow">ZŮSTAŇ S NÁMI V KONTAKTU</span><h2>SádroSvět na Instagramu.</h2><p>Další inspiraci a příspěvky najdeš na našem profilu.</p><a className="text-link" href="https://www.instagram.com/sadrosvet/" target="_blank" rel="noreferrer">Navštívit @sadrosvet</a></section></main><SiteFooter/></>}
+</section></main><SiteFooter/></>}
