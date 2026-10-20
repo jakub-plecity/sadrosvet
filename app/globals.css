@@ -334,3 +334,6 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
 .product-detail-specs strong{font-size:14px;color:#5b5b55}.product-detail-specs span{font-size:17px;font-weight:600}
 .extended-product-details h3{font-size:23px;letter-spacing:-.02em}.extended-product-details p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;color:#42423c}.extended-product-details>.button{justify-self:start}
 @media(max-width:650px){.product-detail-specs{grid-template-columns:1fr}.product-detail-actions>.button{flex:1}}
+
+/* Keep catalog product photos in their original colors. */
+.collection .product-gallery .product-photo img{filter:none!important}
