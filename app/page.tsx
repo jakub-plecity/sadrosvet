@@ -14,7 +14,7 @@ import {ContactForm} from "@/components/contact-form";
 import {SiteFooter} from "@/components/site-footer";
 import {readSessionCart,saveSessionCart} from "@/lib/session-cart";
 type Cart=Record<string,number>;
-const publicCategory=(name:string)=>name.normalize("NFC").trim().toLocaleLowerCase("cs-CZ")!=="test";
+const publicCategory=(name:string)=>!["test","test kategorie"].includes(name.normalize("NFC").trim().toLocaleLowerCase("cs-CZ"));
 export default function Shop(){
  const [products,setProducts]=useState<Product[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState("");
  const [category,setCategory]=useState("Vše"),[sort,setSort]=useState("default"),[detail,setDetail]=useState<Product|null>(null);
