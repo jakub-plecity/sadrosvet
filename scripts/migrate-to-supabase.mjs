@@ -1,8 +1,6 @@
-import {getStore} from '@netlify/blobs';
-import {createHash} from 'node:crypto';
 import {getDatabase} from '@netlify/database';
 import pg from 'pg';
-import {copyToSupabase} from './supabase-copy.mjs';
+import {copyToSupabase, savePrivateBackup} from './supabase-copy.mjs';
 
 const status = process.argv.includes('--status');
 const apply = process.argv.includes('--apply');
@@ -19,16 +17,7 @@ const targetPool = new pg.Pool({connectionString: url.toString(), max: 1, connec
 let source, target;
 try {
   source = await sourcePool.connect(); target = await targetPool.connect();
-  const saveBackup = async snapshot => {
-    const store = getStore({name:'database-migration-backups',consistency:'strong'});
-    const data = JSON.stringify(snapshot);
-    const digest = createHash('sha256').update(data).digest('hex');
-    const key = 'before-supabase-' + Date.now() + '.json';
-    await store.set(key,data,{metadata:{sha256:digest,source:'Netlify Database'}});
-    const restored = await store.get(key,{type:'text',consistency:'strong'});
-    if (typeof restored !== 'string' || createHash('sha256').update(restored).digest('hex') !== digest) throw new Error('Backup verification failed');
-    console.log('Verified database backup saved to private Netlify Blobs store:',key);
-  };
+  const saveBackup = async snapshot => {await savePrivateBackup(target,snapshot); console.log('Verified snapshot saved in private sadrosvet_backups schema');};
   if (status) {
     const targetTables = (await target.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows.map(row=>row.tablename);
     console.log(JSON.stringify({targetTables,backupEnvironmentConfigured:Boolean(process.env.NETLIFY_BLOBS_CONTEXT)}));

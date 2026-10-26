@@ -78,3 +78,19 @@ export async function copyToSupabase(source, target, {apply = false, saveBackup,
     if (sourceBegun) await source.query('ROLLBACK').catch(() => {});
   }
 }
+
+// Durable, access-restricted export, separate from the mutable application tables.
+// Uses the same target transaction: copying cannot commit without its backup.
+export async function savePrivateBackup(target,snapshot) {
+  const data=JSON.stringify(snapshot);
+  const digest=createHash('sha256').update(data).digest('hex');
+  const id='before-supabase-'+Date.now();
+  await target.query('CREATE SCHEMA IF NOT EXISTS sadrosvet_backups');
+  await target.query('REVOKE ALL ON SCHEMA sadrosvet_backups FROM PUBLIC, anon, authenticated');
+  await target.query('CREATE TABLE IF NOT EXISTS sadrosvet_backups.exports (id text PRIMARY KEY, sha256 text NOT NULL, snapshot text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())');
+  await target.query('ALTER TABLE sadrosvet_backups.exports ENABLE ROW LEVEL SECURITY');
+  await target.query('REVOKE ALL ON sadrosvet_backups.exports FROM PUBLIC, anon, authenticated');
+  await target.query('INSERT INTO sadrosvet_backups.exports(id,sha256,snapshot) VALUES($1,$2,$3)',[id,digest,data]);
+  const stored=(await target.query('SELECT snapshot FROM sadrosvet_backups.exports WHERE id=$1',[id])).rows[0]?.snapshot;
+  if(typeof stored!=='string'||createHash('sha256').update(stored).digest('hex')!==digest) throw new Error('Backup verification failed');
+}

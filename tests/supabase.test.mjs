@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
 import {readFile,readdir} from 'node:fs/promises';
 import {build} from 'esbuild';
-import {copyToSupabase} from '../scripts/supabase-copy.mjs';
+import {copyToSupabase, savePrivateBackup} from '../scripts/supabase-copy.mjs';
 
 function adapter(db) {
  return {async query(sql, values) {
@@ -26,8 +26,10 @@ async function fixtures() {
 test('migration verifies current source values, preserves identities, and protects Data API access', async()=>{
  const f=await fixtures();
  try {
-  const result=await copyToSupabase(f.from,f.to,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);}});
+  const result=await copyToSupabase(f.from,f.to,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);await savePrivateBackup(f.to,snapshot);}});
   assert.equal(result.applied,true);
+  assert.equal((await f.target.query('SELECT count(*)::int AS n FROM sadrosvet_backups.exports')).rows[0].n,1);
+  assert.equal((await f.target.query("SELECT has_schema_privilege('anon','sadrosvet_backups','usage') AS allowed")).rows[0].allowed,false);
   assert.ok(result.tables.every(t=>t.verified));
   assert.equal((await f.target.query("SELECT name FROM products WHERE stock=7 AND name LIKE 'Žluť%'")).rows[0].name,'Žluťoučký nový výrobek');
   assert.equal((await f.target.query("SELECT order_number::text AS n FROM customer_orders WHERE id='migrate-order'")).rows[0].n,'42');
@@ -52,7 +54,7 @@ test('migration refuses an occupied target without changing its contents',async(
  const f=await fixtures();
  try {
   await f.target.exec("CREATE TABLE keep_me(id int); INSERT INTO keep_me VALUES(123);");
-  await assert.rejects(()=>copyToSupabase(f.from,f.to,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);}}),/not empty/);
+  await assert.rejects(()=>copyToSupabase(f.from,f.to,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);await savePrivateBackup(f.to,snapshot);}}),/not empty/);
   assert.equal((await f.target.query('SELECT id FROM keep_me')).rows[0].id,123);
  } finally {await f.close();}
 });
@@ -61,7 +63,7 @@ test('copy failure rolls back schema and rows',async()=>{
  const f=await fixtures();
  try {
   const failing={async query(sql,values){if(sql.startsWith('INSERT INTO public."products"'))throw new Error('simulated connection failure');return f.to.query(sql,values);}};
-  await assert.rejects(()=>copyToSupabase(f.from,failing,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);}}),/simulated/);
+  await assert.rejects(()=>copyToSupabase(f.from,failing,{apply:true,saveBackup:async snapshot=>{assert.equal(snapshot.format,1);assert.ok(snapshot.tables.products.length);await savePrivateBackup(f.to,snapshot);}}),/simulated/);
   assert.equal((await f.target.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public'")).rows[0].n,0);
  } finally {await f.close();}
 });
