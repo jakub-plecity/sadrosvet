@@ -1,4 +1,4 @@
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../lib/database-pool.mjs";
 // Retry missed Comgate callbacks without trusting client redirects or altering orders blindly.
 export const config={schedule:"*/15 * * * *"};
 export default async function(){

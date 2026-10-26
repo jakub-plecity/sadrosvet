@@ -1,5 +1,5 @@
 import {guard} from "@/lib/server";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 export const dynamic="force-dynamic";
 // Read-only investigation of a failed Comgate order. No inventory or payment changes.
 export async function GET(request:Request){

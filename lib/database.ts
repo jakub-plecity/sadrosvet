@@ -1,4 +1,4 @@
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "./database-pool.mjs";
 
 type Row = Record<string, unknown>;
 type Result = {rows: Row[]; rowCount: number | null};

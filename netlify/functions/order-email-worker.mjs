@@ -1,4 +1,4 @@
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../lib/database-pool.mjs";
 export const config={schedule:"*/5 * * * *"};
 export default async function(){
  if(process.env.ENABLE_REAL_CHECKOUT!=="true")return;

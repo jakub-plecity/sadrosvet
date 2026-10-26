@@ -1,6 +1,6 @@
 import {guard} from "@/lib/server";
 import {createComgatePayment} from "@/lib/comgate";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"private, no-store"};
 export async function POST(request:Request){

@@ -1,5 +1,5 @@
 import "server-only";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "./database-pool.mjs";
 import {createComgatePayment} from "@/lib/comgate";
 type Row=Record<string,unknown>;
 type Client={query:(sql:string,params?:unknown[])=>Promise<{rows:Row[],rowCount:number|null}>;release:()=>void};
