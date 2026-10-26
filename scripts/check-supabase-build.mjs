@@ -13,5 +13,7 @@ if (apply || check || status) {
 // Apply the approved catalog correction once, without overriding later admin edits.
 if (process.env.CONTEXT === 'production' && process.env.DATABASE_PROVIDER === 'supabase') {
   const {applyCatalogCorrection} = await import('./correct-miska-category.mjs');
-  await applyCatalogCorrection();
+  await applyCatalogCorrection(undefined,{closePool:false});
+  const {applyFormalCatalogCopy} = await import("./formal-catalog-copy.mjs");
+  await applyFormalCatalogCopy();
 }

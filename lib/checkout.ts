@@ -18,15 +18,15 @@ export function demoDeliveryPoints(service:ServiceId):DeliveryPoint[]{
 }
 export const deliverySchema=z.object({service:z.enum(["personal-pickup","balikovna-point","balikovna-address","packeta-point","packeta-address"]),payment:z.enum(["cod","cash","comgate"]),point:pointSchema.nullable()}).strict().superRefine((data,ctx)=>{
  if(data.service==="personal-pickup"&&(data.point!==null||!["cash","comgate"].includes(data.payment)))ctx.addIssue({code:"custom",message:"Osobní odběr vyžaduje platbu hotově bez výdejního místa."});
- if(data.service!=="personal-pickup"&&!["cod","comgate"].includes(data.payment))ctx.addIssue({code:"custom",message:"Pro dopravu vyber dobírku."});
- if(data.service.endsWith("-point")&&!data.point)ctx.addIssue({code:"custom",message:"Vyber výdejní místo."});
- if(data.service==="packeta-point"&&data.point&&!/^\d+$/.test(data.point.id))ctx.addIssue({code:"custom",message:"Vyber místo v oficiální mapě Zásilkovny."});
+ if(data.service!=="personal-pickup"&&!["cod","comgate"].includes(data.payment))ctx.addIssue({code:"custom",message:"Pro dopravu vyberte dobírku."});
+ if(data.service.endsWith("-point")&&!data.point)ctx.addIssue({code:"custom",message:"Vyberte výdejní místo."});
+ if(data.service==="packeta-point"&&data.point&&!/^\d+$/.test(data.point.id))ctx.addIssue({code:"custom",message:"Vyberte místo v oficiální mapě Zásilkovny."});
  if(data.service.endsWith("-address")&&data.point)ctx.addIssue({code:"custom",message:"Doručení na adresu nesmí obsahovat výdejní místo."});
- if(data.point&&data.service.endsWith("-point")&&data.service!=="balikovna-point"&&data.service!=="packeta-point"&&!demoDeliveryPoints(data.service).some(p=>p.id===data.point?.id&&p.name===data.point.name&&p.address===data.point.address&&p.zip===data.point.zip))ctx.addIssue({code:"custom",message:"Vyber zkušební místo odpovídající dopravci."});
+ if(data.point&&data.service.endsWith("-point")&&data.service!=="balikovna-point"&&data.service!=="packeta-point"&&!demoDeliveryPoints(data.service).some(p=>p.id===data.point?.id&&p.name===data.point.name&&p.address===data.point.address&&p.zip===data.point.zip))ctx.addIssue({code:"custom",message:"Vyberte zkušební místo odpovídající dopravci."});
 });
 export type Delivery=z.infer<typeof deliverySchema>;
-export const contactSchema=z.object({name:z.string().trim().min(3,"Vyplň jméno a příjmení.").max(120),email:z.string().trim().email("Zadej platný e-mail."),phone:z.string().transform(v=>v.replace(/[\s()-]/g,"")).refine(v=>/^(?:\+420|\+421)?[67]\d{8}$/.test(v),"Zadej české nebo slovenské mobilní číslo.")});
-export const addressSchema=z.object({street:z.string().trim().min(2,"Vyplň ulici.").max(120),house:z.string().trim().min(1,"Vyplň číslo domu.").max(20),city:z.string().trim().min(2,"Vyplň město.").max(120),zip:z.string().transform(v=>v.replace(/\s/g,"")).refine(v=>/^[1-7]\d{4}$/.test(v),"Zadej české PSČ.")});
+export const contactSchema=z.object({name:z.string().trim().min(3,"Vyplňte jméno a příjmení.").max(120),email:z.string().trim().email("Zadejte platný e-mail."),phone:z.string().transform(v=>v.replace(/[\s()-]/g,"")).refine(v=>/^(?:\+420|\+421)?[67]\d{8}$/.test(v),"Zadejte české nebo slovenské mobilní číslo.")});
+export const addressSchema=z.object({street:z.string().trim().min(2,"Vyplňte ulici.").max(120),house:z.string().trim().min(1,"Vyplňte číslo domu.").max(20),city:z.string().trim().min(2,"Vyplňte město.").max(120),zip:z.string().transform(v=>v.replace(/\s/g,"")).refine(v=>/^[1-7]\d{4}$/.test(v),"Zadejte české PSČ.")});
 export function deliveryPrice(service:ServiceId){return shippingServices.find(s=>s.id===service)?.priceMinor??null;}
 export function quote(subtotalMinor:number,delivery:Delivery){
  const shippingMinor=deliveryPrice(delivery.service);
