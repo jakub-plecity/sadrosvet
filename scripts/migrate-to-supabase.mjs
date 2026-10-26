@@ -12,7 +12,7 @@ for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) url.searchPar
 if (url.port === '6543') throw new Error('Use session pooler port 5432 or direct connection for migration');
 const sourcePool = getDatabase().pool;
 const targetPool = new pg.Pool({connectionString: url.toString(), max: 1, connectionTimeoutMillis: 10000,
-  ssl: {rejectUnauthorized: true, ...(process.env.SUPABASE_DATABASE_CA ? {ca: process.env.SUPABASE_DATABASE_CA} : {})}});
+  ssl: {rejectUnauthorized: true, ...(process.env.SUPABASE_DATABASE_CA?.replaceAll('\\n', '\n') ? {ca: process.env.SUPABASE_DATABASE_CA?.replaceAll('\\n', '\n')} : {})}});
 let source, target;
 try {
   source = await sourcePool.connect(); target = await targetPool.connect();
