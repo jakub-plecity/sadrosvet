@@ -10,7 +10,7 @@ const paragraphs = [
 "Co je obrovskou výhodou tohoto materiálu a co nás moc baví? Dá se na ni malovat! S pomocí akrylových barev je každý kousek originál, který zabaví děti i dospělé všech věkových kategorií. Navíc, fantazii se meze nekladou! Kombinací různých výrobků, barev a dekorací lze vytvořit doplněk do každého domova.",
 "K prodeji nabízíme jak samostatné výrobky, aby si každý dopřál, co potřebuje, tak již zkompletované sety, které se nejvíce líbí nám. Další doplňky bohužel nejsou součástí nákupu.",
 "Neváhejte nás navštívit na našich výjezdech na trhy a další akce, kde je možné si vlastní varianty vyzkoušet a seskládat. Navíc při výrobě dekorací na trhy, kde je větší prostor pro rozmanitost, se můžeme trochu více rozvášnit a zkoušíme i barevné varianty, sety a další výrobky. Rádi Vás uvidíme!",
-"Výrobu na přání nabízíme po individuální domluvě. Napište nám svou představu; společně upřesníme možnosti provedení, cenu a termín. Odeslání poptávky vás nezavazuje k nákupu.",
+"Výrobu na přání nabízíme po individuální domluvě. Způsob a termín platby sjednáme u každé zakázky zvlášť a písemně je potvrdíme před závazným objednáním. Napište nám svou představu; společně upřesníme možnosti provedení, cenu a termín. Odeslání poptávky vás nezavazuje k nákupu.",
 "Plánované akce, novinky, fotky, videa z výroby a tipy na seskládané komplety najdete na našich sociálních sítích.",
 "A teď už konec řečí, jde se tvořit!"
 ];
