@@ -2,6 +2,7 @@ import {getDatabase} from "../../lib/database-pool.mjs";
 // Retry missed Comgate callbacks without trusting client redirects or altering orders blindly.
 export const config={schedule:"*/15 * * * *"};
 export default async function(){
+ if(process.env.DATABASE_MAINTENANCE==="true")return;
  if(process.env.ENABLE_REAL_CHECKOUT!=="true"||!process.env.COMGATE_MERCHANT)return;
  const site=process.env.SITE_ORIGIN;
  if(site!=="https://sadrosvet.cz")return;

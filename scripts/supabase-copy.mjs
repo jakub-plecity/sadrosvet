@@ -7,7 +7,7 @@ const fingerprint = rows => createHash('sha256').update(rows.map(row => row.reco
 const tableNames = async client => (await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows.map(row => row.tablename);
 
 // Both connections are held for the full transaction. No outgoing email or payment calls.
-export async function copyToSupabase(source, target, {apply = false, migrationDirectory = new URL('../netlify/database/migrations/', import.meta.url)} = {}) {
+export async function copyToSupabase(source, target, {apply = false, saveBackup, migrationDirectory = new URL('../netlify/database/migrations/', import.meta.url)} = {}) {
   const files = (await readdir(migrationDirectory)).filter(name => name.endsWith('.sql')).sort();
   const migrations = await Promise.all(files.map(async name => ({name, sql: await readFile(new URL(name, migrationDirectory), 'utf8')})));
   const expected = [...new Set(migrations.flatMap(({sql}) => [...sql.matchAll(/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?([a-z_][a-z_0-9]*)/gi)].map(match => match[1])))].sort();
@@ -38,11 +38,13 @@ export async function copyToSupabase(source, target, {apply = false, migrationDi
       ordered.push(next);
     }
     const report = [];
+    const backupTables = {};
     for (const table of ordered) {
       const columns = async client => (await client.query(`SELECT column_name,data_type,udt_name,is_identity,is_generated
         FROM information_schema.columns WHERE table_schema='public' AND table_name=$1 ORDER BY ordinal_position`, [table])).rows;
       if (JSON.stringify(await columns(source)) !== JSON.stringify(await columns(target))) throw new Error('Schema mismatch: ' + table);
       const rows = (await source.query(`SELECT to_jsonb(t)::text AS record FROM ${qualified(table)} t LIMIT 100001`)).rows;
+      backupTables[table] = rows.map(row => row.record);
       if (rows.length > 100000) throw new Error('Table exceeds bounded migration size: ' + table);
       if (rows.length) await target.query(`INSERT INTO ${qualified(table)} OVERRIDING SYSTEM VALUE SELECT * FROM jsonb_populate_recordset(NULL::${qualified(table)}, $1::jsonb)`, ['[' + rows.map(row => row.record).join(',') + ']']);
       const copied = (await target.query(`SELECT to_jsonb(t)::text AS record FROM ${qualified(table)} t`)).rows;
@@ -64,6 +66,10 @@ export async function copyToSupabase(source, target, {apply = false, migrationDi
     await target.query('ALTER TABLE public.sadrosvet_schema_migrations ENABLE ROW LEVEL SECURITY');
     await target.query('REVOKE ALL ON public.sadrosvet_schema_migrations FROM PUBLIC, anon, authenticated');
     for (const {name, sql} of migrations) await target.query('INSERT INTO public.sadrosvet_schema_migrations(name,sha256) VALUES($1,$2)', [name, createHash('sha256').update(sql).digest('hex')]);
+    if (apply) {
+      if (!saveBackup) throw new Error('Durable backup is required before commit');
+      await saveBackup({format:1, createdAt:new Date().toISOString(), migrations, tables:backupTables, orderSequence:{name:seq,...sequence}});
+    }
     await target.query(apply ? 'COMMIT' : 'ROLLBACK'); targetBegun = false;
     await source.query('ROLLBACK'); sourceBegun = false;
     return {applied: apply, tables: report};

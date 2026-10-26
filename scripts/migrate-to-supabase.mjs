@@ -1,3 +1,5 @@
+import {getStore} from '@netlify/blobs';
+import {createHash} from 'node:crypto';
 import {getDatabase} from '@netlify/database';
 import pg from 'pg';
 import {copyToSupabase} from './supabase-copy.mjs';
@@ -16,7 +18,17 @@ const targetPool = new pg.Pool({connectionString: url.toString(), max: 1, connec
 let source, target;
 try {
   source = await sourcePool.connect(); target = await targetPool.connect();
-  console.log(JSON.stringify(await copyToSupabase(source, target, {apply}), null, 2));
+  const saveBackup = async snapshot => {
+    const store = getStore({name:'database-migration-backups',consistency:'strong'});
+    const data = JSON.stringify(snapshot);
+    const digest = createHash('sha256').update(data).digest('hex');
+    const key = 'before-supabase-' + Date.now() + '.json';
+    await store.set(key,data,{metadata:{sha256:digest,source:'Netlify Database'}});
+    const restored = await store.get(key,{type:'text',consistency:'strong'});
+    if (typeof restored !== 'string' || createHash('sha256').update(restored).digest('hex') !== digest) throw new Error('Backup verification failed');
+    console.log('Verified database backup saved to private Netlify Blobs store:',key);
+  };
+  console.log(JSON.stringify(await copyToSupabase(source, target, {apply,saveBackup}), null, 2));
 } catch (error) {
   // No driver messages, row data, or credentials in Netlify build logs.
   console.error('Migration failed; target transaction rolled back. Error code:', error?.code || 'CHECK_FAILED');
