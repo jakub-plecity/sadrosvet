@@ -5,7 +5,7 @@ export const legalSections = [
       "1.1 Prodávajícím je Petr Valenta, IČO 72813679, se sídlem Na Kopci 1083, 537 01 Chrudim, podnikající podle živnostenského zákona. Prodávající není plátcem DPH. Internetový katalog provozuje pod značkou SádroSvět na adrese https://sadrosvet.cz.",
       "1.2 Prodávajícího můžete kontaktovat na e-mailu sadrosvet@seznam.cz nebo telefonu +420 775 014 878. Adresa pro zasílání reklamací a vráceného zboží je Petr Valenta, Na Kopci 1083, 537 01 Chrudim.",
       "1.3 Tyto podmínky upravují nákupy prostřednictvím e-shopu. Spotřebitelem je člověk, který nakupuje mimo svou podnikatelskou činnost nebo samostatný výkon povolání. Ustanovení o spotřebitelském odstoupení, spotřebitelských reklamacích a mimosoudním řešení sporů se vztahují na spotřebitele. Práva ostatních kupujících se řídí občanským zákoníkem.",
-      "1.4 Smlouva i komunikace jsou v českém jazyce. Individuální dohoda má přednost před těmito podmínkami, nesmí však omezit zákonná práva spotřebitele. Objednávky přijímáme pouze prostřednictvím e-shopu a doručujeme pouze v České republice."
+      "1.4 Smlouva i komunikace jsou v českém jazyce. Individuální dohoda má přednost před těmito podmínkami, nesmí však omezit zákonná práva spotřebitele. Běžné objednávky z katalogu přijímáme prostřednictvím e-shopu. Výrobu na přání sjednáváme individuálně podle článku 2.1. Doručujeme pouze v České republice."
     ]
   },
   {

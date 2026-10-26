@@ -28,7 +28,7 @@ export function ContactForm(){
  }
 
  return <section id="o-znacce" className="brand-section contact-section">
-  <div><span className="eyebrow">KONTAKT</span><h2>Napiš nám.</h2><p>Máš dotaz k dekoracím nebo vlastní přání? Rádi si přečteme tvou zprávu.</p></div>
+  <div><span className="eyebrow">KONTAKT</span><h2>Napiš nám.</h2><p>Máš dotaz k dekoracím nebo zájem o výrobu na přání? Napiš nám. Provedení, cenu, platbu a termín dohodneme individuálně. Odesláním poptávky se nezavazuješ k nákupu.</p></div>
   <form className="contact-form" onSubmit={send} aria-busy={busy}>
    <div className="contact-honeypot" aria-hidden="true"><label>Web<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
    <fieldset disabled={busy} className="contact-form-fields"><div className="contact-fields">

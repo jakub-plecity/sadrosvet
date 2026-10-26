@@ -1,4 +1,5 @@
 import {getDatabase} from "../../lib/database-pool.mjs";
+import {customerDocumentsText} from "../../lib/customer-documents.mjs";
 export const config={schedule:"*/5 * * * *"};
 export default async function(){
  if(process.env.DATABASE_MAINTENANCE==="true")return;
@@ -37,7 +38,7 @@ export default async function(){
    const text=[
     "SádroSvět — objednávka č. "+order.order_number,
     "Dobrý den, "+order.customer_name+",",
-    job.event_type==="placed"?"Potvrzujeme přijetí Vaší objednávky.":"Stav Vaší objednávky se změnil: "+job.event_type,
+    job.event_type==="placed"?"Potvrzujeme přijetí Vaší objednávky.":"Stav Vaší objednávky se změnil: "+(eventLabels[job.event_type]??"aktualizace"),
     "",
     ...items.map(i=>i.quantity+"× "+i.name+" — "+(i.quantity*i.unit_price_minor/100).toFixed(2)+" Kč"),
     "Celkem včetně dopravy: "+(order.total_minor/100).toFixed(2)+" Kč",
@@ -46,7 +47,8 @@ export default async function(){
     "",
     "Obchodní podmínky: https://sadrosvet.cz/obchodni-podminky",
     "Odstoupení: https://sadrosvet.cz/formular-pro-odstoupeni",
-    "Kontakt: sadrosvet@seznam.cz"
+    "Kontakt: sadrosvet@seznam.cz",
+    ...(job.event_type==="placed"?["",customerDocumentsText()]:[])
    ].join("\n");
    const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json","Idempotency-Key":"order-"+job.id},body:JSON.stringify({from:process.env.ORDER_EMAIL_FROM,to:[job.recipient],reply_to:process.env.ORDER_EMAIL_REPLY_TO??"sadrosvet@seznam.cz",subject,text}),signal:AbortSignal.timeout(12000)});
    const result=await response.json();
