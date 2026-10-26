@@ -603,6 +603,9 @@ body {
 @media(max-width:650px) {
  .header { gap:.65rem; align-items:center; }
  .header .wordmark { flex:1; min-width:0; }
+ .header .wordmark img { width:2.75rem; height:2.75rem; flex:none; }
+ .header .brand-name { font-size:clamp(1.05rem,4.6vw,1.4rem); }
+ .header .brand-name small { font-size:8px; }
  .header .mobile-menu-toggle { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border:1px solid #cccac2; border-radius:4px; order:2; flex:none; }
  .header .cart-button { order:1; margin-left:auto; min-width:44px; padding:8px; gap:5px; }
  .header .cart-button > span { display:none; }
