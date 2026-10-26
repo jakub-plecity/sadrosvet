@@ -578,3 +578,22 @@ body {
 
 /* Keep editable formal copy above the old text embedded in the banner. */
 .hero-banner-message { position:absolute; z-index:1; left:8%; top:68%; width:30%; padding:1% .6%; background:#191610; color:#fff; text-align:left; font-family:Arial,sans-serif; font-size:clamp(7px,1.15vw,23px); line-height:1.55; font-weight:400; }
+
+/* Preserve the full photograph inside each responsive product frame. */
+.shop-main .collection .product-gallery .product-photo {
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  background: #f4f3ef;
+}
+.shop-main .collection .product-gallery .product-photo > img,
+.product-dialog .product-gallery .product-photo > img {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: none;
+}
