@@ -1,5 +1,5 @@
 import {guard} from "@/lib/server";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 import {sendEmail} from "@/lib/resend";
 export const dynamic="force-dynamic";
 type Row=Record<string,unknown>;

@@ -47,8 +47,9 @@ const output = await build({
   `, resolveDir: process.cwd()},
   bundle: true, write: false, platform: 'node', format: 'esm',
   plugins: [{name: 'netlify-platform-fixture', setup(b) {
-    b.onResolve({filter: /^(server-only|next\/headers|@netlify\/database|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
+    b.onResolve({filter: /^(server-only|next\/headers|@netlify\/database|pg|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
     b.onLoad({filter: /.*/, namespace: 'fixture'}, a => ({loader: 'js', contents:
+      a.path === 'pg' ? `export default {Pool:class {}};` :
       a.path === 'server-only' ? '' :
       a.path === 'next/headers' ? `export async function cookies(){return {get:()=>globalThis.__netlifyTest.cookie?{value:globalThis.__netlifyTest.cookie}:undefined};}` :
       a.path === '@netlify/database' ? `export const getDatabase=()=>({pool:globalThis.__netlifyTest.pool});` :

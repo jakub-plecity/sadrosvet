@@ -1,4 +1,4 @@
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 import {verifyComgatePayment} from "@/lib/comgate";
 export const dynamic="force-dynamic";
 const plain={"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"};

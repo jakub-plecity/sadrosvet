@@ -1,5 +1,5 @@
 import "server-only";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "./database-pool.mjs";
 import type {RealOrderInput} from "./order-input";
 import {quote} from "./checkout";
 type Row=Record<string,unknown>;

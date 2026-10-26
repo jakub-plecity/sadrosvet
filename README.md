@@ -69,3 +69,11 @@ Lokální sestavení a integrační testy nenahrazují ověření nasazené apli
 Netlify Free má společný měsíční kreditový limit. Databázové výpočty, přenos dat a nasazování spotřebovávají kredity. Při vyčerpání může být web pozastaven; nelze zaručit nepřetržitý ostrý provoz zdarma. Sledujte Usage & billing.
 
 Dokumentace: [Next.js](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/), [Database](https://docs.netlify.com/build/data-and-storage/netlify-database/getting-started/), [Blobs](https://docs.netlify.com/build/data-and-storage/netlify-blobs/).
+
+
+## Přesun databáze do Supabase
+
+Postup je v [docs/supabase-migration.md](docs/supabase-migration.md).
+Pouhé nastavení `SUPABASE_DATABASE_URL` nic nepřepíná. Všechny webové endpointy
+včetně Comgate callbacků a obou plánovaných úloh sdílejí přepínač
+`DATABASE_PROVIDER` (výchozí `netlify`). Fotografie v Netlify Blobs zůstávají na místě.

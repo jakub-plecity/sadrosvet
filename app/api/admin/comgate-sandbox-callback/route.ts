@@ -1,5 +1,5 @@
 import {guard} from "@/lib/server";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 export const dynamic="force-dynamic";
 export async function GET(request:Request){
  const denied=await guard();if(denied)return denied;

@@ -1,5 +1,5 @@
 import {guard} from "@/lib/server";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../../../lib/database-pool.mjs";
 import {createPacketaPacket} from "@/lib/packeta-api";
 import {z} from "zod";
 export const dynamic="force-dynamic";

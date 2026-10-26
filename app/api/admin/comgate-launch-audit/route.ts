@@ -1,5 +1,5 @@
 import {guard} from "@/lib/server";
-import {getDatabase} from "@netlify/database";
+import {getDatabase} from "../../../../lib/database-pool.mjs";
 import {comgateConfigured} from "@/lib/comgate";
 export const dynamic="force-dynamic";
 export async function GET(){
