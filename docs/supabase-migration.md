@@ -1,95 +1,37 @@
-# SádroSvět: Netlify Database → Supabase
+# SádroSvět: přenos do Supabase
 
-## Stav a bezpečný výchozí režim
+## Provozní přepínače (Netlify, produkční kontext)
 
-Kód podporuje oba poskytovatele. `DATABASE_PROVIDER` chybějící nebo `netlify`
-ponechá všechny požadavky na původní databázi. Samotná existence tajné
-`SUPABASE_DATABASE_URL` nezmění produkční provoz. Režim `supabase` vyžaduje
-platné připojení; při chybě se nikdy nevrací k Netlify (aby se nerozdělily objednávky).
-Kód nepřenáší fotografie: ty dál používají stávající Netlify Blobs.
+- `DATABASE_PROVIDER`: `netlify` (výchozí) nebo `supabase`. Při chybě se nikdy automaticky nevrací k jinému poskytovateli.
+- `SUPABASE_DATABASE_URL`: tajný serverový řetězec připojení.
+- `SUPABASE_DATABASE_CA`: PEM certifikát Supabase; podporuje skutečné i escapované konce řádků (`\n`). TLS ověřuje server.
+- `DATABASE_MAINTENANCE=true`: proxy vrací 503 pro API a obě plánované úlohy nezapisují.
+- `SUPABASE_MIGRATION_CHECK=true`: build provede úplnou kopii a kontrolu, pak cílovou transakci vrátí zpět.
+- `SUPABASE_MIGRATION_STATUS=true`: build pouze vypíše názvy existujících cílových tabulek a dostupnost prostředí pro zálohu.
+- `SUPABASE_MIGRATION_APPLY=true` a `MIGRATION_WRITES_PAUSED=true`: build potvrdí ověřenou kopii. Vyžaduje již nasazený a ověřený údržbový režim a prázdný cíl.
 
-## 1. Tajné proměnné a nasazení přípravy
+Všechny migrační režimy jsou výhradně pro produkční Netlify kontext; deploy preview používá jinou zdrojovou databázi. Spouštějí se v prebuild hooku, build command zůstává `npm run build`.
 
-- `SUPABASE_DATABASE_URL`: řetězec Session pooler, port 5432, z panelu Connect.
-  Heslo se speciálními znaky musí být v URI správně percent-encoded.
-- Nastavit jako tajnou proměnnou v Netlify pro **Builds a Functions** produkčního
-  kontextu. Nepoužívat prefix `NEXT_PUBLIC_`, nepsat do Git ani build commandu.
-- Ponechat `DATABASE_PROVIDER=netlify` nebo nenastavené.
-- TLS vždy ověřuje server. Pokud řetězec certifikátů není systémově důvěryhodný,
-  vložit PEM kořenového certifikátu z Supabase do `SUPABASE_DATABASE_CA`.
-  Nevypínat ověřování TLS.
-- Nechat nasadit tuto přípravu. Neodpojovat Netlify Database.
+## Postup prvotního přenosu
 
-## 2. Ověření na skutečných připojeních
+1. Nastavit tajné připojení a CA, ponechat Netlify jako poskytovatele.
+2. Spustit CHECK a ověřit shodu všech tabulek; vypnout CHECK.
+3. Zapnout a nasadit MAINTENANCE. Ověřit 503 na živém API a zastavení obou workerů; zohlednit rozpracované platby a příchozí callbacky.
+4. Teprve poté potvrdit WRITES_PAUSED a jednorázově spustit APPLY.
+5. Ověřit `applied:true`, shodu všech řádků a uloženou zálohu. Vypnout APPLY, CHECK, STATUS.
+6. Nastavit PROVIDER=supabase, vypnout MAINTENANCE a WRITES_PAUSED; znovu nasadit.
+7. Ověřit katalog, fotografie, administraci, sklad a objednávky. Platby a maily ověřovat kontrolovaně, aby nevznikly nechtěné reálné transakce.
 
-V produkčním kontextu Netlify (ne v deploy preview, které má vlastní databázovou
-větev) dočasně použít build command:
+## Záloha a bezpečnost
 
-```sh
-npm run db:supabase:check && npm run build
-```
+Ostrá kopie uloží export zdrojového snapshotu včetně migrací a identity sekvence do `sadrosvet_backups.exports`. Export obsahuje původní JSON záznamy jako text, SHA-256 a čas. Před potvrzením se znovu načte a ověří. Schéma je oddělené od měněných aplikačních tabulek, nemá veřejná oprávnění a tabulka používá RLS. Backup se potvrzuje ve stejné transakci jako kopie; bez ověření backupu se přenos nepotvrdí.
 
-Kontrola ve skutečné cílové databázi vytvoří schéma, přenese konzistentní snapshot,
-porovná počty a otisky všech řádků a **celou cílovou transakci vrátí zpět**.
-Cíl tedy zůstane prázdný. Výpis obsahuje pouze názvy tabulek, počty a výsledek.
-Odmítá neprázdný cíl, neočekávané tabulky a rozdíly schématu. Žádné heslo není ve výpisu.
-Kontrola neslouží jako záloha; před ostrou kopií pořídit také samostatný export
-produkční databáze a uložit jej mimo dočasné build prostředí.
+Aplikační tabulky mají RLS a odebraný přístup rolím PUBLIC, anon, authenticated. Server používá privilegované připojení. Migrační skripty nevypisují řádky zákazníků ani připojovací řetězce. Původní Netlify databáze zůstává zachovaná. Fotografie dál používají Netlify Blobs.
 
-## 3. Ostrý přenos
+Po prvních zápisech do Supabase nelze bezpečně vrátit PROVIDER=netlify bez sjednocení nových dat. Původní databázi rušit až po kontrole a uchování zálohy. Opakovaný APPLY na neprázdný cíl skript odmítne.
 
-Nejdříve pozastavit **všechny zápisy** do zdrojové databáze po celou dobu přenosu
-AŽ DO přepnutí: objednávky, administraci, e-mailové úlohy, platební callbacky,
-rekonciliaci a další zapisující cesty. Samotné vypnutí checkoutu nestačí.
-Pokud nejsou vypořádané platby, naplánovat odstávku a zachování/opakování callbacků.
-Bez údržbového režimu a zálohy přenos nespouštět. `MIGRATION_WRITES_PAUSED=true`
-je potvrzení operátora, nikoliv mechanismus blokování zápisů.
+## Budoucí migrace
 
-V produkčním kontextu Netlify, stále s `DATABASE_PROVIDER=netlify`, nastavit
-`MIGRATION_WRITES_PAUSED=true` a dočasný build command:
+Netlify automatické migrace neupravují Supabase. Provedené názvy a SHA-256 jsou v `public.sadrosvet_schema_migrations`. Nové změny schématu je nutné samostatně aplikovat do Supabase včetně oprávnění a RLS. Skript prvotního přenosu se k tomu nepoužívá.
 
-```sh
-npm run db:supabase:copy && npm run build
-```
-
-Skript čte zdroj v read-only repeatable-read transakci a nemění jeho data.
-Cíl vytvoří v jedné transakci; nahradí historické seed záznamy skutečnými daty,
-zkontroluje všechny řádky a zachová pořadové číslo objednávek i stav identity sekvence.
-Zapne RLS a odebere přístup veřejným rolím `anon`/`authenticated`.
-Serverové připojení musí používat roli s potřebnými oprávněními (typicky postgres).
-Při chybě před potvrzením se cíl vrátí zpět. Úspěšný přenos je neopakovatelný:
-jakýkoliv neprázdný cíl skript odmítne. Pokud po kopii selže samotný build,
-nejprve zkontrolovat výsledek; kopii znovu nespouštět ani cíl nemažte naslepo.
-
-## 4. Přepnutí a kontrola
-
-- Vrátit build command na `npm run build`, odstranit `MIGRATION_WRITES_PAUSED`.
-- Nastavit `DATABASE_PROVIDER=supabase` pro Functions i Builds v produkčním kontextu.
-- Znovu nasadit, aby se přepnuly i obě plánované funkce.
-- Během odstávky ověřit přihlášení, produkty, fotografie, sklad a administraci.
-- Ověřit objednávku a její položky, změnu skladu, platby Comgate, e-mailovou frontu
-  a dopravní operace. Kontrolovat záznamy přímo v Supabase, ne jen HTTP 200.
-- Teprve pak obnovit provoz. Původní databázi zatím ponechat jako zálohu.
-
-Návrat na `DATABASE_PROVIDER=netlify` je bezpečný jen dokud Supabase nepřijala nové
-zápisy. Po nových objednávkách je nejdříve potřeba data sjednotit; prosté přepnutí
-by tyto objednávky skrylo. Netlify Database zrušit až po ověření a uchování zálohy.
-
-## Další změny schématu
-
-Netlify automatické migrace po přepnutí neupravují Supabase. Kopie uloží názvy
-a SHA-256 provedených migrací do `sadrosvet_schema_migrations`. Budoucí změny
-je potřeba samostatně aplikovat do Supabase v řízené migraci včetně RLS nových
-tabulek; nepoužívat opětovně skript pro prvotní kopii.
-
-## Lokální ověření bez produkčních hesel
-
-```sh
-npm test
-npm run typecheck
-npm run build
-```
-
-Testy přenosu ověřují skutečné SQL nad PGlite, vrácení změn při chybě, odmítnutí
-neprázdného cíle, zachování aktuálních dat a identity, RLS i explicitní přepínač.
-PGlite nenahrazuje test s reálným Supabase TLS/poolerem; ten provede krok 2.
+Lokální kontroly: `npm test`, `npm run typecheck`, `npm run build`.
