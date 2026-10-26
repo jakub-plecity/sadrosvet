@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
     "db:supabase:check": "node scripts/migrate-to-supabase.mjs --check",
-    "db:supabase:copy": "node scripts/migrate-to-supabase.mjs --apply"
+    "db:supabase:copy": "node scripts/migrate-to-supabase.mjs --apply",
+    "prebuild": "node scripts/check-supabase-build.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
