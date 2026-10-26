@@ -4,8 +4,9 @@ import {getDatabase} from '@netlify/database';
 import pg from 'pg';
 import {copyToSupabase} from './supabase-copy.mjs';
 
+const status = process.argv.includes('--status');
 const apply = process.argv.includes('--apply');
-if (!apply && !process.argv.includes('--check')) throw new Error('Choose --check (copy then roll back) or --apply');
+if (!status && !apply && !process.argv.includes('--check')) throw new Error('Choose --check (copy then roll back) or --apply');
 if (process.env.DATABASE_PROVIDER === 'supabase') throw new Error('Migration requires Netlify as the current provider');
 if (apply && process.env.MIGRATION_WRITES_PAUSED !== 'true') throw new Error('Pause all source writes before setting MIGRATION_WRITES_PAUSED=true');
 if (!process.env.SUPABASE_DATABASE_URL) throw new Error('SUPABASE_DATABASE_URL is missing');
@@ -28,10 +29,14 @@ try {
     if (typeof restored !== 'string' || createHash('sha256').update(restored).digest('hex') !== digest) throw new Error('Backup verification failed');
     console.log('Verified database backup saved to private Netlify Blobs store:',key);
   };
-  console.log(JSON.stringify(await copyToSupabase(source, target, {apply,saveBackup}), null, 2));
+  if (status) {
+    const targetTables = (await target.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows.map(row=>row.tablename);
+    console.log(JSON.stringify({targetTables,backupEnvironmentConfigured:Boolean(process.env.NETLIFY_BLOBS_CONTEXT)}));
+    if(targetTables.includes('products')) console.log('Target products:',(await target.query('SELECT count(*)::int AS n FROM products')).rows[0].n);
+  } else console.log(JSON.stringify(await copyToSupabase(source, target, {apply,saveBackup}), null, 2));
 } catch (error) {
   // No driver messages, row data, or credentials in Netlify build logs.
-  console.error('Migration failed; target transaction rolled back. Error code:', error?.code || 'CHECK_FAILED');
+  console.error('Migration failed; target transaction rolled back. Error code:', error?.code || error?.name || 'CHECK_FAILED');
   process.exitCode = 1;
 } finally {
   source?.release(); target?.release();
