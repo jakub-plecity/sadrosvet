@@ -40,6 +40,7 @@ const output = await build({
     export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
     export * as packetaShipment from './app/api/admin/real-orders/[id]/shipment/route';
     export * as packetaReadiness from './app/api/admin/packeta-readiness/route';
+    export * as launchAudit from './app/api/admin/comgate-launch-audit/route';
     export * as contact from './app/api/contact/route';
     export * as email from './app/api/admin/email/route';
     export * as session from './lib/admin-session';
@@ -281,4 +282,21 @@ test('live Comgate visibility follows public and admin-only settings without cre
   for(const key of keys){if(before[key]===undefined)delete process.env[key];else process.env[key]=before[key];}
   state.cookie=cookie;
  }
+});
+
+
+test('operational audit requires admin, reports public payment flags and never changes orders',async()=>{
+ const keys=['ENABLE_REAL_CHECKOUT','ENABLE_COMGATE_CHECKOUT','COMGATE_TEST','COMGATE_ADMIN_ONLY','COMGATE_MERCHANT','COMGATE_SECRET'];
+ const saved=Object.fromEntries(keys.map(k=>[k,process.env[k]]));const oldCookie=state.cookie;
+ try{
+  state.cookie='';assert.equal((await app.launchAudit.GET()).status,403);
+  state.cookie=(await app.session.createSession()).split(';')[0].split('=').slice(1).join('=');
+  Object.assign(process.env,{ENABLE_REAL_CHECKOUT:'true',ENABLE_COMGATE_CHECKOUT:'true',COMGATE_TEST:'false',COMGATE_ADMIN_ONLY:'false',COMGATE_MERCHANT:'test-merchant',COMGATE_SECRET:'never-return-this-secret'});
+  const before=(await postgres.query('SELECT count(*)::int AS count FROM customer_orders')).rows[0].count;
+  const r=await app.launchAudit.GET();assert.equal(r.status,200);const data=await r.json();
+  assert.equal(data.publicComgateEnabled,true);assert.equal(data.databaseAccessible,true);assert.equal(data.emailConfigured,true);
+  assert.equal(typeof data.failedEmails,'number');assert.equal(JSON.stringify(data).includes('never-return-this-secret'),false);
+  process.env.COMGATE_ADMIN_ONLY='true';assert.equal((await (await app.launchAudit.GET()).json()).publicComgateEnabled,false);
+  assert.equal((await postgres.query('SELECT count(*)::int AS count FROM customer_orders')).rows[0].count,before);
+ }finally{state.cookie=oldCookie;for(const k of keys){if(saved[k]===undefined)delete process.env[k];else process.env[k]=saved[k];}}
 });
