@@ -11,7 +11,7 @@ export const legalSections = [
   {
     "title": "2 Výrobky a jejich určení",
     "paragraphs": [
-      "2.1 Prodáváme sádrové dekorace a dekorativní výrobky ve tvaru svíček. Všechny výrobky jsou výhradně ozdobné. Výrobky označené jako dekorativní svíčky se nesmějí zapalovat a nejsou určeny jako zdroj světla nebo tepla. Výrobu podle individuálního přání zákazníka neposkytujeme.",
+      "2.1 Prodáváme sádrové dekorace a dekorativní výrobky ve tvaru svíček. Všechny výrobky jsou výhradně ozdobné. Výrobky označené jako dekorativní svíčky se nesmějí zapalovat a nejsou určeny jako zdroj světla nebo tepla. Výrobu na přání nabízíme po individuální domluvě. Poptávku můžete poslat kontaktním formulářem nebo e-mailem; sama o sobě není závaznou objednávkou. Před závazným objednáním společně písemně odsouhlasíme provedení, celkovou cenu, dopravu, platbu a termín dodání. Pro takto sjednanou zakázku platí individuálně potvrzený termín.",
       "2.2 Rozměry, materiál, barevné provedení, cena a případná další omezení použití jsou uvedeny u konkrétního výrobku. Při manipulaci a údržbě postupujte podle informací u výrobku a přiložených pokynů. Dekorace nejsou hračkami ani výrobky určenými ke konzumaci; chraňte je před dětmi, poškozením a zdroji tepla.",
       "2.3 Vlastnosti ruční výroby, například drobné povrchové nebo barevné odchylky, popisujeme u výrobku, pokud se jej týkají. Ruční výroba sama o sobě nevylučuje odpovědnost za vady. Dodané zboží musí odpovídat sjednaným vlastnostem a zákonným požadavkům."
     ]
@@ -54,7 +54,7 @@ export const legalSections = [
       "6.4 Do 14 dnů od odstoupení vám vrátíme všechny přijaté peněžní prostředky včetně nákladů na původní dodání, nejvýše však ve výši nejlevnějšího běžného způsobu dodání, který jsme nabízeli. Peníze vrátíme stejným platebním prostředkem; jiný způsob je možný s vaším souhlasem a bez dalších nákladů. U dobírky se s vámi dohodneme na způsobu vrácení.",
       "6.5 Vrácení platby můžeme pozdržet, dokud neobdržíme vrácené zboží nebo neprokážete jeho odeslání, podle toho, co nastane dříve. To neplatí, pokud jsme nabídli, že si zboží sami vyzvedneme.",
       "6.6 Zboží si můžete prohlédnout v rozsahu nutném ke zjištění jeho povahy, vlastností a funkčnosti. Odpovídáte pouze za snížení hodnoty způsobené nakládáním nad tento rozsah, pokud jste byli řádně poučeni o právu odstoupit. Neúčtujeme paušální poplatek za rozbalení nebo opětovné uvedení do prodeje. Původní obal není podmínkou vrácení; křehké zboží ale bezpečně zabalte.",
-      "6.7 Na běžné dekorace z naší nabídky neuplatňujeme výjimku pro výrobu na přání. Samotná ruční výroba ani označení výrobku jako dekorace nezbavuje spotřebitele práva odstoupit. Pokud bychom vás řádně nepoučili o odstoupení, uplatní se zákonné prodloužení lhůty až o jeden rok."
+      "6.7 Na běžné dekorace z katalogu neuplatňujeme výjimku pro výrobu na přání. Samotná ruční výroba ani výběr z předem nabízených variant nezbavuje spotřebitele práva odstoupit. U jedinečného zboží skutečně vyrobeného podle vašich individuálních požadavků nebo přizpůsobeného vašim osobním potřebám se může uplatnit zákonná výjimka z práva odstoupit podle § 1837 písm. d) občanského zákoníku. O jejím uplatnění vás informujeme před závazným objednáním konkrétní zakázky. Tím nejsou omezena vaše práva z vad zboží. Pokud bychom vás řádně nepoučili o odstoupení, uplatní se zákonné prodloužení lhůty až o jeden rok."
     ]
   },
   {

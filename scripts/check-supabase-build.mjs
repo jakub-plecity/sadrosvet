@@ -9,3 +9,9 @@ if (apply || check || status) {
   const result = spawnSync(process.execPath, [fileURLToPath(new URL('./migrate-to-supabase.mjs', import.meta.url)), status ? '--status' : apply ? '--apply' : '--check'], {stdio:'inherit'});
   if (result.error || result.status !== 0) process.exit(result.status || 1);
 }
+
+// Apply the approved catalog correction once, without overriding later admin edits.
+if (process.env.CONTEXT === 'production' && process.env.DATABASE_PROVIDER === 'supabase') {
+  const {applyCatalogCorrection} = await import('./correct-miska-category.mjs');
+  await applyCatalogCorrection();
+}
