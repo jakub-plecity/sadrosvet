@@ -7,7 +7,7 @@ export const dynamic="force-dynamic";
 export default function Page(){const online=publicOnlinePaymentsEnabled();return <LegalPage title="Doprava a platba">
 <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
 <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Doprava</h2>
-<p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Objednávky doručujeme prostřednictvím níže uvedených služeb. Aktuální cena dopravy se vždy zobrazí v košíku před odesláním objednávky.</p>
+<p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Objednávky doručujeme prostřednictvím níže uvedených služeb. Aktuální cena dopravy se vždy zobrazí v košíku před odesláním objednávky. Platí i pro větší výrobky a objednávky více kusů. Případné vyšší náklady na zabalení nebo přepravu hradíme my a zákazníkovi je dodatečně neúčtujeme.</p>
 <ul className="my-5 space-y-3 rounded-xl bg-stone-50 p-5 text-base leading-7 text-stone-800">{shippingServices.filter(service=>service.available).map(service=><li key={service.id}><strong>{service.carrier} – {service.label}:</strong> {(service.priceMinor/100).toLocaleString("cs-CZ")} Kč{service.codMinor>0?` (dobírka +${(service.codMinor/100).toLocaleString("cs-CZ")} Kč)`:""}.</li>)}</ul>
 <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Zboží předáváme dopravci nejpozději do 7 pracovních dnů od odeslání objednávky.</p>
 </section>
