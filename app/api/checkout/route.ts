@@ -2,10 +2,10 @@ import {realOrderInput} from "@/lib/order-input";
 import {createRealOrder,OrderConflict,OrderUnavailable} from "@/lib/order-transactions";
 import {z} from "zod";
 import {beginComgatePayment} from "@/lib/comgate-order";
-import {comgateConfigured} from "@/lib/comgate";
+import {onlinePaymentsEnabled} from "@/lib/payment-availability";
 import {isAdmin} from "@/lib/server";
 export const dynamic="force-dynamic";
-const onlineEnabled=()=>process.env.ENABLE_REAL_CHECKOUT==="true"&&process.env.ENABLE_COMGATE_CHECKOUT==="true"&&process.env.COMGATE_TEST==="false"&&comgateConfigured();
+const onlineEnabled=onlinePaymentsEnabled;
 export async function GET(){const allowed=onlineEnabled()&&(process.env.COMGATE_ADMIN_ONLY==="false"||await isAdmin());return Response.json({enabled:process.env.ENABLE_REAL_CHECKOUT==="true",comgateEnabled:allowed},{headers:{"Cache-Control":"private, no-store"}});}
 export async function POST(request:Request){
  // Merchant-controlled launch switch; public orders are enabled only after deployment configuration.

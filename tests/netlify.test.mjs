@@ -263,3 +263,22 @@ test('public storefront never offers a test-only Comgate payment even if legacy 
   [process.env.ENABLE_REAL_CHECKOUT,process.env.ENABLE_COMGATE_CHECKOUT,process.env.COMGATE_TEST]=before;
  }
 });
+
+test('live Comgate visibility follows public and admin-only settings without creating a payment', async () => {
+ const keys=['ENABLE_REAL_CHECKOUT','ENABLE_COMGATE_CHECKOUT','COMGATE_TEST','COMGATE_ADMIN_ONLY','COMGATE_MERCHANT','COMGATE_SECRET'];
+ const before=Object.fromEntries(keys.map(key=>[key,process.env[key]])); const cookie=state.cookie;
+ try {
+  Object.assign(process.env,{ENABLE_REAL_CHECKOUT:'true',ENABLE_COMGATE_CHECKOUT:'true',COMGATE_TEST:'false',COMGATE_ADMIN_ONLY:'true',COMGATE_MERCHANT:'fixture-merchant',COMGATE_SECRET:'fixture-secret'});
+  state.cookie='';
+  assert.deepEqual(await (await app.realCheckout.GET()).json(),{enabled:true,comgateEnabled:false});
+  await signedIn();
+  assert.deepEqual(await (await app.realCheckout.GET()).json(),{enabled:true,comgateEnabled:true});
+  state.cookie='';process.env.COMGATE_ADMIN_ONLY='false';
+  assert.deepEqual(await (await app.realCheckout.GET()).json(),{enabled:true,comgateEnabled:true});
+  delete process.env.COMGATE_SECRET;
+  assert.deepEqual(await (await app.realCheckout.GET()).json(),{enabled:true,comgateEnabled:false});
+ } finally {
+  for(const key of keys){if(before[key]===undefined)delete process.env[key];else process.env[key]=before[key];}
+  state.cookie=cookie;
+ }
+});

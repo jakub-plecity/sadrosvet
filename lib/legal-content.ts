@@ -30,14 +30,14 @@ export const legalSections = [
     "title": "4 Ceny a platby",
     "paragraphs": [
       "4.1 Ceny jsou uvedeny v českých korunách a jsou konečné. Prodávající není plátcem DPH. K ceně zboží se připočítává doprava a případná dobírka podle volby v košíku. Žádné další povinné poplatky nepřidáme bez vašeho výslovného souhlasu.",
-      "4.2 Aktuálně lze u doručovaného zboží zaplatit dobírkou. Online bankovní tlačítka Comgate jsou aktivována u poskytovatele, avšak zatím nejsou připojena ke košíku. Platby kartou Visa a Mastercard budou zpřístupněny až po jejich schválení a technickém zprovoznění. Hotovostní úhrada je možná v rámci dobírky tam, kde ji zvolený dopravce a způsob doručení umožňují. Dostupné způsoby platby jsou uvedeny v košíku; například u boxu může být vyžadována bezhotovostní platba.",
+      "4.2 U doručovaného zboží lze zaplatit dobírkou nebo online přes platební bránu Comgate, pokud je tato možnost v košíku dostupná. Při osobním odběru po předchozí domluvě lze zaplatit hotově při převzetí nebo dostupnou online platbou předem. Konkrétní bankovní, karetní a další online metody se zobrazí přímo v nabídce Comgate podle aktivovaných služeb a podporovaného zařízení. Dobírkový příplatek se účtuje pouze při volbě dobírky. U boxů může být vyžadována bezhotovostní úhrada dobírky podle pokynů dopravce.",
       "4.3 Při neúspěšné platbě kartou nás kontaktujte, abychom mohli dohodnout opakování platby nebo jiný dostupný způsob. Případná změna objednávky nebo termínu dodání vyžaduje dohodu. Doklad o koupi poskytujeme v elektronické podobě."
     ]
   },
   {
     "title": "5 Doprava a dodání",
     "paragraphs": [
-      "5.1 Zboží doručujeme prostřednictvím Zásilkovny a Balíkovny podle možností zobrazených v košíku a vaší volby. Konkrétní cena dopravy i případné dobírky je uvedena před závazným odesláním objednávky.",
+      "5.1 Zboží doručujeme prostřednictvím Zásilkovny a Balíkovny podle možností zobrazených v košíku a vaší volby. Nabízíme také bezplatný osobní odběr na adrese Na Kopci 1083, 537 01 Chrudim, pouze po předchozí domluvě e-mailem nebo telefonicky. Termín osobního odběru si domluvíme individuálně. Konkrétní cena dopravy i případné dobírky je uvedena před závazným odesláním objednávky.",
       "5.2 Zboží předáme dopravci nejpozději do 7 pracovních dnů od odeslání objednávky zákazníkem. V případě navýšení počtu objednávek se může dodací lhůta prodloužit. V takovém případě vás budeme kontaktovat.",
       "5.3 Při doručení na výdejní místo nebo do boxu předáme zásilku dopravci v uvedené lhůtě; následná přeprava a připravenost k vyzvednutí závisí na dopravci. Zásilku vyzvedněte v úložní době dopravce. Pro počátek lhůty k odstoupení a pro přechod nebezpečí škody je rozhodující skutečné převzetí zboží vámi nebo vámi určenou třetí osobou odlišnou od dopravce.",
       "5.4 Pokud jsme v prodlení, můžete nám poskytnout dodatečnou přiměřenou lhůtu a po jejím marném uplynutí odstoupit. Bez dodatečné lhůty lze odstoupit zejména tehdy, pokud dodání odmítneme nebo bylo dodání v určitém čase nezbytné podle okolností při uzavření smlouvy či vašeho sdělení před objednávkou. Po odstoupení vrátíme přijaté platby bez zbytečného odkladu.",
