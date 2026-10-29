@@ -21,3 +21,7 @@ export async function migratePhotoObjects(db,{fetchImage=fetch,sourceOrigin='htt
  }
  return {photos:keys.length,totalBytes,checksumsVerified:true};
 }
+
+export async function verifyPhotoObjects(db){
+ return migratePhotoObjects(db,{fetchImage:async()=>{throw Error('Required migrated photo is missing; restore it from backup');}});
+}
