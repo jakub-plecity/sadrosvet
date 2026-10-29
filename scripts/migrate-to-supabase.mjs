@@ -1,4 +1,3 @@
-import {getDatabase} from '@netlify/database';
 import pg from 'pg';
 import {copyToSupabase, savePrivateBackup} from './supabase-copy.mjs';
 
@@ -11,7 +10,8 @@ if (!process.env.SUPABASE_DATABASE_URL) throw new Error('SUPABASE_DATABASE_URL i
 const url = new URL(process.env.SUPABASE_DATABASE_URL);
 for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) url.searchParams.delete(key);
 if (url.port === '6543') throw new Error('Use session pooler port 5432 or direct connection for migration');
-const sourcePool = getDatabase().pool;
+if (!process.env.LEGACY_SOURCE_DATABASE_URL) throw new Error('LEGACY_SOURCE_DATABASE_URL is required for historical import');
+const sourcePool = new pg.Pool({connectionString:process.env.LEGACY_SOURCE_DATABASE_URL,max:1,ssl:{rejectUnauthorized:true}});
 const targetPool = new pg.Pool({connectionString: url.toString(), max: 1, connectionTimeoutMillis: 10000,
   ssl: {rejectUnauthorized: true, ...(process.env.SUPABASE_DATABASE_CA?.replaceAll('\\n', '\n') ? {ca: process.env.SUPABASE_DATABASE_CA?.replaceAll('\\n', '\n')} : {})}});
 let source, target;

@@ -7,7 +7,7 @@ const fingerprint = rows => createHash('sha256').update(rows.map(row => row.reco
 const tableNames = async client => (await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows.map(row => row.tablename);
 
 // Both connections are held for the full transaction. No outgoing email or payment calls.
-export async function copyToSupabase(source, target, {apply = false, saveBackup, migrationDirectory = new URL('../netlify/database/migrations/', import.meta.url)} = {}) {
+export async function copyToSupabase(source, target, {apply = false, saveBackup, migrationDirectory = new URL('../db/migrations/', import.meta.url)} = {}) {
   const files = (await readdir(migrationDirectory)).filter(name => name.endsWith('.sql')).sort();
   const migrations = await Promise.all(files.map(async name => ({name, sql: await readFile(new URL(name, migrationDirectory), 'utf8')})));
   const expected = [...new Set(migrations.flatMap(({sql}) => [...sql.matchAll(/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?([a-z_][a-z_0-9]*)/gi)].map(match => match[1])))].sort();

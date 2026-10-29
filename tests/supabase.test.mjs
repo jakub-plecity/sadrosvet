@@ -14,7 +14,7 @@ function adapter(db) {
 }
 async function fixtures() {
  const source=new PGlite(),target=new PGlite();
- for(const name of (await readdir('netlify/database/migrations')).sort()) await source.exec(await readFile('netlify/database/migrations/'+name,'utf8'));
+ for(const name of (await readdir('db/migrations')).sort()) await source.exec(await readFile('db/migrations/'+name,'utf8'));
  await target.exec('CREATE ROLE anon; CREATE ROLE authenticated;');
  await source.query("UPDATE products SET name=$1,stock=7 WHERE id=(SELECT id FROM products ORDER BY id LIMIT 1)", ['Žluťoučký nový výrobek']);
  await source.exec(`INSERT INTO customer_orders(id,order_number,payment_method,service,customer_name,customer_email,customer_phone,subtotal_minor,shipping_minor,cod_minor,total_minor,request_hash)
@@ -36,7 +36,7 @@ test('migration verifies current source values, preserves identities, and protec
   assert.equal((await f.target.query("SELECT nextval(pg_get_serial_sequence('customer_orders','order_number'))::text AS n")).rows[0].n,'100');
   assert.equal((await f.target.query("SELECT count(*)::int AS n FROM pg_tables WHERE schemaname='public' AND NOT rowsecurity")).rows[0].n,0);
   assert.equal((await f.target.query("SELECT has_table_privilege('anon','customer_orders','select') AS allowed")).rows[0].allowed,false);
-  assert.equal((await f.target.query('SELECT count(*)::int AS n FROM sadrosvet_schema_migrations')).rows[0].n,(await readdir('netlify/database/migrations')).length);
+  assert.equal((await f.target.query('SELECT count(*)::int AS n FROM sadrosvet_schema_migrations')).rows[0].n,(await readdir('db/migrations')).length);
   assert.equal((await f.source.query("SELECT count(*)::int AS n FROM customer_orders WHERE id='migrate-order'")).rows[0].n,1);
  } finally {await f.close();}
 });
@@ -68,7 +68,7 @@ test('copy failure rolls back schema and rows',async()=>{
  } finally {await f.close();}
 });
 
-test('provider requires explicit switch, reuses a small TLS pool, and never falls back', async()=>{
+test('provider defaults to Supabase, reuses a verified TLS pool and rejects legacy providers', async()=>{
  const output=await build({entryPoints:['lib/database-pool.mjs'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'drivers',setup(b){
   b.onResolve({filter:/^(@netlify\/database|pg)$/},a=>({path:a.path,namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:a.path==='pg'?`export default {Pool:class {constructor(options){this.options=options;} on(){}}};`:`export const getDatabase=()=>({pool:globalThis.__providerNetlifyPool});`,loader:'js'}));
@@ -79,7 +79,8 @@ test('provider requires explicit switch, reuses a small TLS pool, and never fall
   const {getDatabase}=await import('data:text/javascript;base64,'+Buffer.from(output.outputFiles[0].text).toString('base64'));
   delete process.env.DATABASE_PROVIDER;
   process.env.SUPABASE_DATABASE_URL='postgresql://postgres:secret@example.test:5432/postgres?sslmode=disable';
-  assert.equal(getDatabase().pool,globalThis.__providerNetlifyPool);
+  delete process.env.SUPABASE_DATABASE_URL;assert.throws(getDatabase,/required/);
+  process.env.DATABASE_PROVIDER='netlify';assert.throws(getDatabase,/Unsupported/);
   process.env.DATABASE_PROVIDER='invalid';assert.throws(getDatabase,/Unsupported/);
   process.env.DATABASE_PROVIDER='supabase';delete process.env.SUPABASE_DATABASE_URL;assert.throws(getDatabase,/required/);
   process.env.SUPABASE_DATABASE_URL='postgresql://postgres:secret@example.test:5432/postgres?sslmode=disable';

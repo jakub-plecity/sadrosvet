@@ -26,12 +26,18 @@ Všechny migrační režimy jsou výhradně pro produkční Netlify kontext; dep
 
 Ostrá kopie uloží export zdrojového snapshotu včetně migrací a identity sekvence do `sadrosvet_backups.exports`. Export obsahuje původní JSON záznamy jako text, SHA-256 a čas. Před potvrzením se znovu načte a ověří. Schéma je oddělené od měněných aplikačních tabulek, nemá veřejná oprávnění a tabulka používá RLS. Backup se potvrzuje ve stejné transakci jako kopie; bez ověření backupu se přenos nepotvrdí.
 
-Aplikační tabulky mají RLS a odebraný přístup rolím PUBLIC, anon, authenticated. Server používá privilegované připojení. Migrační skripty nevypisují řádky zákazníků ani připojovací řetězce. Původní Netlify databáze zůstává zachovaná. Fotografie dál používají Netlify Blobs.
+Aplikační tabulky mají RLS a odebraný přístup rolím PUBLIC, anon, authenticated. Server používá privilegované připojení. Migrační skripty nevypisují řádky zákazníků ani připojovací řetězce. Původní Netlify databáze zůstává zachovaná. Nahrané produktové fotografie se při dokončení odpojení Netlify převádějí do tabulky `photo_objects` v Supabase. Každý soubor se ověřuje SHA-256.
 
-Po prvních zápisech do Supabase nelze bezpečně vrátit PROVIDER=netlify bez sjednocení nových dat. Původní databázi rušit až po kontrole a uchování zálohy. Opakovaný APPLY na neprázdný cíl skript odmítne.
+Po prvních zápisech do Supabase nelze bezpečně vrátit PROVIDER=netlify bez sjednocení nových dat. Původní databázi a Netlify Blobs rušit až po úspěšném produkčním nasazení, kontrole všech fotografií a uchování zálohy. Opakovaný APPLY na neprázdný cíl skript odmítne.
 
 ## Budoucí migrace
 
-Netlify automatické migrace neupravují Supabase. Provedené názvy a SHA-256 jsou v `public.sadrosvet_schema_migrations`. Nové změny schématu je nutné samostatně aplikovat do Supabase včetně oprávnění a RLS. Skript prvotního přenosu se k tomu nepoužívá.
+Historické migrace jsou v `db/migrations`; Netlify je automaticky neaplikuje. Runtime používá výhradně Supabase, bez záložního připojení na Netlify Database. Provedené názvy a SHA-256 jsou v `public.sadrosvet_schema_migrations`. Nové změny schématu je nutné samostatně aplikovat do Supabase včetně oprávnění a RLS. Skript prvotního přenosu se k tomu nepoužívá.
 
 Lokální kontroly: `npm test`, `npm run typecheck`, `npm run build`.
+
+## Dokončení odpojení Netlify, 29. 10. 2026
+
+Balíčky databáze a Blobs jsou odebrané. Hosting zůstává Netlify; statické soubory přibalené v repozitáři nejsou Blobs a zůstávají součástí nasazení. Nahrané produktové fotografie ukládá `photo_objects` jako binární data spolu s MIME typem, velikostí a SHA-256. Adresy `/api/images/...` zůstávají stejné. Tabulka nemá přístup rolí PUBLIC, anon ani authenticated a má zapnuté RLS. Server používá existující ověřené TLS spojení.
+
+Produkční prebuild ověří databázi i existenci soukromé migrační zálohy a před publikací přenese chybějící fotografie ze zachovaného předchozího nasazení. Při chybě publikaci zastaví. Zdrojové soubory nemaže. Po ukončení přenosu lze prebuild zjednodušit na kontrolu počtu a hashů. Další nově nahrané fotografie se ukládají už pouze do Supabase.

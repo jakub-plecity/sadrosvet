@@ -15,8 +15,8 @@ state.pool = {
   },
   async connect() {return {...this, release() {}};}
 };
-for (const migration of (await readdir('netlify/database/migrations')).sort()) {
-  await postgres.exec(await readFile('netlify/database/migrations/' + migration, 'utf8'));
+for (const migration of (await readdir('db/migrations')).sort()) {
+  await postgres.exec(await readFile('db/migrations/' + migration, 'utf8'));
 }
 process.env.LOCAL_ADMIN_USERNAME = 'test-admin';
 process.env.LOCAL_ADMIN_PASSWORD = randomUUID();
@@ -48,12 +48,13 @@ const output = await build({
   `, resolveDir: process.cwd()},
   bundle: true, write: false, platform: 'node', format: 'esm',
   plugins: [{name: 'netlify-platform-fixture', setup(b) {
-    b.onResolve({filter: /^(server-only|next\/headers|@netlify\/database|pg|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
+    b.onResolve({filter:/database-pool\.mjs$/},()=>({path:'database-pool',namespace:'fixture'}));
+    b.onResolve({filter: /^(server-only|next\/headers|pg|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
     b.onLoad({filter: /.*/, namespace: 'fixture'}, a => ({loader: 'js', contents:
+      a.path === 'database-pool' ? `export const getDatabase=()=>({pool:globalThis.__netlifyTest.pool});` :
       a.path === 'pg' ? `export default {Pool:class {}};` :
       a.path === 'server-only' ? '' :
       a.path === 'next/headers' ? `export async function cookies(){return {get:()=>globalThis.__netlifyTest.cookie?{value:globalThis.__netlifyTest.cookie}:undefined};}` :
-      a.path === '@netlify/database' ? `export const getDatabase=()=>({pool:globalThis.__netlifyTest.pool});` :
       `export function getStore(){const files=globalThis.__netlifyTest.files;return {
         async set(key,data,options){files.set(key,{data,metadata:options.metadata});},
         async getWithMetadata(key){return files.get(key)||null;},async delete(key){files.delete(key);}
@@ -136,7 +137,7 @@ test('multipart photo upload persists bytes and metadata; migrated photo URLs re
   form.append('file',new File([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1ioAAAAASUVORK5CYII=','base64')],'test.png',{type:'image/png'}));
   const response = await app.upload.POST(new Request(origin+'/api/upload',{method:'POST',headers:{origin},body:form}));
   assert.equal(response.status,200); const {image} = await response.json();
-  const key=image.split('/').pop(); assert.equal(files.get(key).metadata.contentType,'image/png');
+  const key=image.split('/').pop(); assert.equal((await postgres.query('SELECT content_type FROM photo_objects WHERE key=$1',[key])).rows[0].content_type,'image/png');
   const served=await app.images.GET(new Request(origin+image),{params:Promise.resolve({key})});
   assert.equal(served.status,200);assert.equal(served.headers.get('content-type'),'image/png');
   const imported=await app.images.GET(new Request(origin+'/api/images/3039ba8c-f8b3-4fe2-89ec-ff89cb5e91cf'),{params:Promise.resolve({key:'3039ba8c-f8b3-4fe2-89ec-ff89cb5e91cf'})});
