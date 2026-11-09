@@ -373,3 +373,28 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
 .product-dialog .gallery-thumbnails button[aria-pressed=true]{border:2px solid #171717}
 .product-dialog .gallery-thumbnails img{width:100%;height:100%;object-fit:contain;filter:none}
 .collection .gallery-thumbnails{display:none}
+
+/* Readability: a clear, consistent gap between headings and body copy on
+   legal/information pages, including Terms, Privacy, Shipping, Returns,
+   Materials and the About page. Keep print spacing comfortable as well. */
+.legal-page h1{margin-bottom:36px}
+.legal-page h2{margin-bottom:24px}
+.legal-page h3{margin-bottom:18px;line-height:1.35}
+.legal-page .legal-related h2,
+.legal-page .withdrawal-document h2{margin-bottom:24px}
+.about-page .about-intro h1{margin-bottom:26px}
+.about-page .about-chapter h2,
+.about-page .about-highlight h3{margin-bottom:24px}
+@media(max-width:650px){
+ .legal-page h1{margin-bottom:28px}
+ .legal-page h2,.legal-page .legal-related h2,
+ .legal-page .withdrawal-document h2{margin-bottom:20px}
+ .legal-page h3{margin-bottom:16px}
+ .about-page .about-chapter h2,
+ .about-page .about-highlight h3{margin-bottom:20px}
+}
+@media print{
+ .legal-page h1{margin-bottom:18pt}
+ .legal-page h2,.legal-page .withdrawal-document h2{margin-bottom:12pt}
+ .legal-page h3{margin-bottom:9pt}
+}
