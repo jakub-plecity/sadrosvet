@@ -4,6 +4,33 @@ import {z} from "zod";
 export const dynamic="force-dynamic";
 const schema=z.object({status:z.enum(["confirmed","processing","shipped","ready_for_pickup","completed","cancelled"])}).strict();
 type Client={query:(sql:string,args?:unknown[])=>Promise<{rows:Record<string,unknown>[],rowCount:number|null}>;release:()=>void};
+// Full order details are served only to authenticated administrators.
+export async function GET(_request:Request,context:{params:Promise<{id:string}>}){
+ const denied=await guard();if(denied)return denied;
+ const id=(await context.params).id;
+ if(!z.string().uuid().safeParse(id).success)return Response.json({error:"Neplatné ID objednávky."},{status:400});
+ const headers={"Cache-Control":"private, no-store"};
+ try{
+  const db=getDatabase().pool;
+  const order=await db.query(`SELECT id,order_number,created_at,updated_at,status,
+   customer_name,customer_phone,customer_email,customer_note,company,
+   shipping_address,billing_address,pickup_point,service,payment_method,payment_status,
+   subtotal_minor,shipping_minor,cod_minor,total_minor
+   FROM customer_orders WHERE id=$1`,[id]);
+  if(!order.rows.length)return Response.json({error:"Objednávka nebyla nalezena."},{status:404,headers});
+  const items=await db.query("SELECT product_id,name,unit_price_minor,quantity FROM customer_order_items WHERE order_id=$1 ORDER BY name",[id]);
+  // Shipment records may not be present on older installations/orders.
+  let shipment:null|{external_tracking_code:unknown;handed_over_at:unknown}=null;
+  try{
+   const shipmentRows=await db.query("SELECT external_tracking_code,handed_over_at FROM order_shipments WHERE order_id=$1 LIMIT 1",[id]);
+   if(shipmentRows.rows.length)shipment={external_tracking_code:shipmentRows.rows[0].external_tracking_code,handed_over_at:shipmentRows.rows[0].handed_over_at};
+  }catch{ /* Optional shipment record; keep the remaining order detail available. */ }
+  return Response.json({order:{...order.rows[0],items:items.rows,shipment}},{headers});
+ }catch(error){
+  console.error("Admin order detail lookup",error);
+  return Response.json({error:"Detail objednávky nelze načíst."},{status:503,headers});
+ }
+}
 export async function PATCH(request:Request,context:{params:Promise<{id:string}>}){
  const denied=await guard(request);if(denied)return denied;
  const id=(await context.params).id;
