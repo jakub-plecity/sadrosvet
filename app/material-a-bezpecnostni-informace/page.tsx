@@ -21,7 +21,7 @@ const safetyInstructions=[
 ];
 
 export default async function Page(){
- return const edited=await readEditablePage("material-a-bezpecnostni-informace");if(edited)return <LegalPage title="Materiál a bezpečnostní informace" hideTitle><EditablePageView document={edited} page="material-a-bezpecnostni-informace"/></LegalPage>;<LegalPage title="Materiál a bezpečnostní informace">
+ const edited=await readEditablePage("material-a-bezpecnostni-informace");if(edited)return <LegalPage title="Materiál a bezpečnostní informace" hideTitle><EditablePageView document={edited} page="material-a-bezpecnostni-informace"/></LegalPage>;return <LegalPage title="Materiál a bezpečnostní informace">
   <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
    <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Informace o použitých materiálech</h2>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Jak náš název napovídá, SádroSvět pro Vás vyrábí především sádrové dekorace. Některé naše výrobky plníme voskem nebo malujeme, a přinášíme tak další dílek k vytvoření Vaší ideální výzdoby.</p>
