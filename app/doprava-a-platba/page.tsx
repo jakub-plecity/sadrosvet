@@ -1,10 +1,12 @@
+import {readEditablePage} from "@/lib/editable-page-data";
+import {EditablePageView} from "@/components/editable-page-view";
 import {LegalPage} from "@/components/legal-page";
 import {shippingServices} from "@/lib/checkout";
 import {publicOnlinePaymentsEnabled} from "@/lib/payment-availability";
 import type {Metadata} from "next";
 export const metadata:Metadata={title:"Doprava a platba | SádroSvět",description:"Jak doručujeme sádrové dekorace po ČR? Zásilkovna, Balíkovna, osobní odběr v Chrudimi, dobírka a dostupné online platby na SádroSvět.",keywords:["SádroSvět doprava","sadrosvet chrudim","Zásilkovna","Balíkovna","osobní odběr Chrudim"],alternates:{canonical:"/doprava-a-platba"}};
 export const dynamic="force-dynamic";
-export default function Page(){const online=publicOnlinePaymentsEnabled();return <LegalPage title="Doprava a platba">
+export default async function Page(){const online=publicOnlinePaymentsEnabled();const edited=await readEditablePage("doprava-a-platba");if(edited)return <LegalPage title="Doprava a platba" hideTitle><EditablePageView document={edited} paymentAvailable={online} page="doprava-a-platba"/></LegalPage>;return <LegalPage title="Doprava a platba">
 <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
 <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Doprava</h2>
 <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Objednávky doručujeme prostřednictvím níže uvedených služeb. Při hodnotě zboží od 1 500 Kč nabízíme dopravu zdarma se všemi dopravci a pro všechny způsoby doručení. Hodnota objednávky se posuzuje bez dopravy a případného poplatku za dobírku. Poplatek za dobírku se účtuje samostatně i při dopravě zdarma. Aktuální cena dopravy se vždy zobrazí v košíku před odesláním objednávky. Platí i pro větší výrobky a objednávky více kusů. Případné vyšší náklady na zabalení nebo přepravu hradíme my a zákazníkovi je dodatečně neúčtujeme.</p>
