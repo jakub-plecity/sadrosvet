@@ -85,6 +85,6 @@ test("deleting an order-referenced product offers archive without cascading",()=
 
 test("About page keeps original photo without overlaid logo",()=>{
  const page=source("app/o-nas/page.tsx");
- assert.match(page,/o-nas-srdce\\.jpeg/);
+ assert.match(page,/o-nas-srdce\.jpeg/);
  assert.doesNotMatch(page,/about-photo-logo/);
 });
