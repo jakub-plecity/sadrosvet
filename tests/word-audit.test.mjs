@@ -107,3 +107,10 @@ test("legal and information pages space headings after paragraphs and sections",
  assert.match(css,/\.legal-page h2\{margin-bottom:24px\}/);
  assert.match(css,/\.legal-page h3\{margin-bottom:18px/);
 });
+
+test("terms describe decorative candles without the removed ignition-prohibition sentence",()=>{
+ const legal=source("lib/legal-content.ts");
+ assert.match(legal,/dekorativní svíčky nejsou určeny jako zdroj světla ani tepla/);
+ assert.doesNotMatch(legal,/se nesmějí zapalovat/);
+ assert.doesNotMatch(legal,/zákaz zapalování/);
+});
