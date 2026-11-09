@@ -132,3 +132,15 @@ test("SEO includes accented and unaccented SádroSvět brand searches",()=>{
   assert.match(page,/canonical:/);
  }
 });
+
+test("launch dashboard separates configuration from live verification",()=>{
+ const panel=source("components/admin/launch-readiness.tsx");
+ assert.match(panel,/SEO a indexování Google/);
+ assert.match(panel,/Nasazení a veřejná doména/);
+ assert.match(panel,/Skutečná expedice a API dopravců/);
+ assert.match(panel,/Závěrečný test objednávky/);
+ assert.match(panel,/Administrace produktů a kategorií/);
+ assert.match(panel,/Zelený stav znamená ověřenou konfiguraci/);
+ assert.doesNotMatch(panel,/Fotografie s logem a produkt „Kuba test miska“ zůstávají/);
+ assert.doesNotMatch(panel,/Svíčky jsou výhradně dekorativní a nesmějí se zapalovat/);
+});
