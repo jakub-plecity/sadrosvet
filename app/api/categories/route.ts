@@ -22,7 +22,7 @@ export async function POST(request:Request){try{
 export async function DELETE(request:Request){try{
  const denied=await guard(request);if(denied)return denied;
  const input=z.object({name:z.string().trim().min(1).max(60)}).parse(await request.json());
- const name=input.name.normalize("NFC").replace(/\\s+/g," ");
+ const name=input.name.normalize("NFC").replace(/\s+/g," ");
  const normalized=name.toLocaleLowerCase("cs-CZ");
  const categories=await readCategories();
  if(!categories.some(c=>c.normalize("NFC").toLocaleLowerCase("cs-CZ")===normalized))return Response.json({error:"Kategorie neexistuje."},{status:404});
