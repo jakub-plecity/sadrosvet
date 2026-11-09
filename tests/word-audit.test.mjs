@@ -88,3 +88,13 @@ test("About page keeps original photo without overlaid logo",()=>{
  assert.match(page,/o-nas-srdce\.jpeg/);
  assert.doesNotMatch(page,/about-photo-logo/);
 });
+
+test("information pages give headings visible separation from body text",()=>{
+ const css=source("app/globals.css");
+ for(const selector of [".legal-page h1", ".legal-page h2", ".legal-page h3", ".about-page .about-chapter h2"]){
+  assert.ok(css.includes(selector),`Missing heading spacing for ${selector}`);
+ }
+ assert.match(css,/\.legal-page h2\{margin-bottom:24px\}/);
+ assert.match(css,/\.legal-page h3\{margin-bottom:18px/);
+ assert.match(css,/@media\(max-width:650px\)/);
+});
