@@ -71,7 +71,7 @@ function EditableText({block,onBlur,onFocus,register}:{block:PageBlock;onBlur:()
    if(run.bold)child=<strong>{child}</strong>;
    if(run.italic)child=<em>{child}</em>;
    if(run.underline)child=<u>{child}</u>;
-   if(run.href)child=<a href={run.href}>{child}</a>;
+   if(run.href)child=<a href={run.href} onClick={event=>event.preventDefault()}>{child}</a>;
    return <span key={index}>{child}</span>;
   })}
  </div>;
