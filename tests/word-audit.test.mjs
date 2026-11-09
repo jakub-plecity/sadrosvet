@@ -132,3 +132,36 @@ test("SEO includes accented and unaccented SádroSvět brand searches",()=>{
   assert.match(page,/canonical:/);
  }
 });
+
+
+test("each legal and information page supports published rich-text overrides",()=>{
+ const pages=["doprava-a-platba","obchodni-podminky","ochrana-osobnich-udaju","material-a-bezpecnostni-informace"];
+ for(const page of pages){
+  const file=source("app/"+page+"/page.tsx");
+  assert.match(file,/readEditablePage/);
+  assert.match(file,/EditablePageView/);
+  assert.match(file,/hideTitle/);
+ }
+});
+test("admin page-editing tools appear at the bottom of administration",()=>{
+ const portal=source("app/admin/portal.tsx");
+ const ui=source("components/admin/content-pages.tsx");
+ assert.match(portal,/<AdminContentPages\/><\/main>/);
+ assert.match(ui,/Uložit a publikovat/);
+ assert.match(ui,/Vrátit původní znění/);
+ assert.match(ui,/Doprava a platba|editablePageNames/);
+ assert.match(ui,/execCommand/);
+ assert.match(ui,/cms-rich-input/);
+});
+test("saved rich text uses a schema, authenticated writes and escaped React rendering",()=>{
+ const model=source("lib/editable-page-content.ts");
+ const api=source("app/api/admin/page-content/[page]/route.ts");
+ const view=source("components/editable-page-view.tsx");
+ assert.match(model,/pageDocumentSchema/);
+ assert.match(model,/href:z.string/);
+ assert.match(api,/guard\(request\)/);
+ assert.match(api,/md5\(value\)/);
+ assert.match(api,/ON CONFLICT DO NOTHING/);
+ assert.match(view,/shippingServices/);
+ assert.doesNotMatch(view,/dangerouslySetInnerHTML/);
+});
