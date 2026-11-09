@@ -366,3 +366,10 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
 .collection .product-gallery .gallery-arrow,.collection .product-gallery .gallery-counter,.collection .product-gallery .gallery-dots{display:none}
 @media(max-width:650px){.site-footer{padding-left:6%;padding-right:6%}.site-footer .footer-top{grid-template-columns:1fr;gap:26px}.site-footer .footer-social{grid-column:auto}.site-footer .footer-payment{justify-content:flex-start}.legal-page{padding-left:6%;padding-right:6%}.legal-page .legal-section{text-align:left}.free-shipping-banner{padding:8px 6%;font-size:12px}.catalog-contact .contact-section{padding:28px 6%}}
 @media print{.free-shipping-banner{display:none}}
+
+/* Full-color image thumbnails are only displayed in the product detail. */
+.product-dialog .gallery-thumbnails{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.product-dialog .gallery-thumbnails button{width:64px;height:64px;padding:3px;border:1px solid #bbb;border-radius:4px;overflow:hidden;background:#fff}
+.product-dialog .gallery-thumbnails button[aria-pressed=true]{border:2px solid #171717}
+.product-dialog .gallery-thumbnails img{width:100%;height:100%;object-fit:contain;filter:none}
+.collection .gallery-thumbnails{display:none}
