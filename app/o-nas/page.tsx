@@ -2,7 +2,7 @@ import {SiteHeader} from "@/components/site-header";
 import {SocialLinks} from "@/components/social-links";
 import type {Metadata} from "next";
 import {SiteBrand,SiteFooter} from "@/components/site-footer";
-export const metadata:Metadata={title:"O nás · SádroSvět",description:"Jsme SádroSvět! Parta z Chrudimi, která se rozhodla dělat radost nejen sobě, ale i ostatním."};
+export const metadata:Metadata={title:"O nás | SádroSvět Chrudim",description:"Poznejte SádroSvět z Chrudimi: tvoříme ručně vyráběné sádrové dekorace a bytové doplňky z keramické sádry. Nabízíme také výrobu na přání.",keywords:["SádroSvět Chrudim","sadrosvet chrudim","o SádroSvět","ruční výroba dekorací","sádrové dekorace Chrudim","keramická sádra"],alternates:{canonical:"/o-nas"}};
 const paragraphs = [
 "Představujeme se Vám jako plně pracující čtveřice z Chrudimi, která se ráda schází, tvoří a jezdí mezi Vás. Dvě generace, čtyři názory. Technolog, mluvka, kreativec a vozíčkář Jířa, k tomu garáž plná sádry a vosku, která se proměnila v dílnu, co více si můžeme přát. Snad už jen radost každého, kdo odchází s něčím, co jsme vlastnoručně vyrobili a co dokáže vykouzlit úsměv na tváři. A tak se snažíme posouvat dál a dál, od dárků rodině k prodeji známým, k trhům a nyní až k e-shopu.",
 "Děkujeme všem, kteří si u nás dělají radost a náš malý koníček podporují. Moc si vážíme Vaší důvěry a toho, že si našimi výrobky zútulňujete svůj osobní prostor nebo jen posíláte naši radost dál.",
