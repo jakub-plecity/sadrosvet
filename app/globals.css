@@ -418,3 +418,12 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
  .legal-page :is(p,ul,ol,dl,blockquote) + :is(h2,h3){margin-top:16pt}
  .legal-page .legal-section + .legal-section{margin-top:20pt}
 }
+
+/* Extra breathing room between each material description and the next heading. */
+.legal-page .materials-subheading{margin-top:48px;margin-bottom:24px}
+@media(max-width:650px){
+ .legal-page .materials-subheading{margin-top:36px;margin-bottom:20px}
+}
+@media print{
+ .legal-page .materials-subheading{margin-top:18pt;margin-bottom:12pt}
+}
