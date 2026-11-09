@@ -50,21 +50,21 @@ export function CartCheckout({open,onOpenChange,products,cart,quantity,clear,bus
  async function finish(){
   for(let i=0;i<4;i++){const error=validate(i);if(error){setStep(i);setMessage(error);return;}}
   if(!realCheckout){setMessage("Příjem objednávek je nyní pozastaven. Zkuste to později nebo nás kontaktujte.");return;}
-  if(!accepted){setMessage("Potvrď obchodní podmínky.");return;}
+  if(!accepted){setMessage("Potvrďte obchodní podmínky.");return;}
   setBusy(true);setMessage("");
   try{
    const id=idRef.current||crypto.randomUUID();idRef.current=id;
    const payload={id,delivery:{service,payment:payment==="comgate"?"comgate" as const:isPickup?"cash" as const:"cod" as const,point},items:cartItems.map(p=>({id:p.id,quantity:cart[p.id]})),expectedTotalMinor:total};
    const realPayload={...payload,contact,shippingAddress:service.endsWith("-address")?address:null,billingAddress:billing,company:business?company:null,note};
-   const response=await fetch(realCheckout?"/api/checkout":"/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(realCheckout?realPayload:payload)});
+   const response=await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(realPayload)});
    const data=await response.json() as {id:string;totalMinor:number;orderNumber?:string;error?:string;paymentRedirect?:string};
    if(!response.ok)throw new Error(data.error||("Objednávku se nepodařilo bezpečně potvrdit."));
    if(payment==="comgate"){if(!data.paymentRedirect)throw new Error("Chybí bezpečný platební odkaz."); const u=new URL(data.paymentRedirect);if(u.protocol!=="https:"||!u.hostname.endsWith(".comgate.cz"))throw new Error("Neplatný platební odkaz.");window.location.assign(u.toString());return;}
-   clear();setContact({name:"",email:"",phone:""});setAddress({street:"",house:"",city:"",zip:""});setBilling({street:"",house:"",city:"",zip:""});setCompany({name:"",ico:"",dic:""});setBusiness(false);setNote("");setReceipt({id:data.id,totalMinor:data.totalMinor,real:realCheckout,orderNumber:data.orderNumber});
+   clear();setContact({name:"",email:"",phone:""});setAddress({street:"",house:"",city:"",zip:""});setBilling({street:"",house:"",city:"",zip:""});setCompany({name:"",ico:"",dic:""});setBusiness(false);setNote("");setReceipt({id:data.id,totalMinor:data.totalMinor,real:true,orderNumber:data.orderNumber});
   }catch(error){setMessage(error instanceof Error?error.message:("Objednávku nelze potvrdit."));}finally{setBusy(false);}
  }
  return <Sheet modal={service!=="packeta-point"} open={open} onOpenChange={value=>{if(!busy)onOpenChange(value);}}><SheetContent className="cart-sheet checkout-sheet" onInteractOutside={e=>{if(service==="packeta-point"&&document.querySelector('iframe[src*="widget.packeta.com"]'))e.preventDefault();}}><SheetTitle>Váš košík <span className="muted">({count})</span></SheetTitle><SheetDescription>{realCheckout?"Vyberte dopravu a způsob platby a před odesláním zkontrolujte objednávku.":"Prohlížení košíku. Příjem objednávek je nyní pozastaven."}</SheetDescription><div className="cart-body">
- {receipt?<div className="receipt" role="status"><Package size={38}/><h3>{receipt.real?"Objednávka přijata":"Zkouška košíku dokončena"}</h3><p>{receipt.real?"Děkujeme. Objednávku jsme přijali. Potvrzení přijde e-mailem.":"V administraci je uložený obsah košíku, doprava a výdejní místo. Kontaktní údaje ani adresu příjemce jsme neodeslali ani neuložili. Potvrzovací e-mail se neposílá."}</p><code>{receipt.orderNumber??receipt.id.slice(0,8).toUpperCase()}</code><strong>{money(receipt.totalMinor)}</strong><button className="button blue" onClick={()=>{setReceipt(null);setStep(0);setPoint(null);onOpenChange(false);}}>Zpět do katalogu</button></div>:count===0?<div className="notice"><ShoppingBag size={36}/><p>Váš košík zatím čeká na svůj první tvar.</p><button className="button blue" onClick={()=>{setStep(0);onOpenChange(false);}}>Vybrat dekoraci</button></div>:<>
+ {receipt?<div className="receipt" role="status"><Package size={38}/><h3>{"Objednávka přijata"}</h3><p>{"Děkujeme. Objednávku jsme přijali. Potvrzení přijde e-mailem."}</p><code>{receipt.orderNumber??receipt.id.slice(0,8).toUpperCase()}</code><strong>{money(receipt.totalMinor)}</strong><button className="button blue" onClick={()=>{setReceipt(null);setStep(0);setPoint(null);onOpenChange(false);}}>Zpět do katalogu</button></div>:count===0?<div className="notice"><ShoppingBag size={36}/><p>Váš košík zatím čeká na svůj první tvar.</p><button className="button blue" onClick={()=>{setStep(0);onOpenChange(false);}}>Vybrat dekoraci</button></div>:<>
  <ol className="checkout-steps" aria-label="Průběh objednávky">{steps.map((label,i)=><li key={label} aria-current={step===i?"step":undefined}><button disabled={busy||i>step} onClick={()=>{setStep(i);setMessage("");}}><span>{i+1}</span>{label}</button></li>)}</ol>
  <h2 className="checkout-heading" ref={heading} tabIndex={-1}>{steps[step]}</h2>
  <form onSubmit={e=>{e.preventDefault();if(step<4)next();else void finish();}}>
