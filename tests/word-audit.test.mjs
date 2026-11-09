@@ -165,3 +165,34 @@ test("saved rich text uses a schema, authenticated writes and escaped React rend
  assert.match(view,/shippingServices/);
  assert.doesNotMatch(view,/dangerouslySetInnerHTML/);
 });
+
+
+test("order numbers open guarded complete order details and Czech workflow",()=>{
+ const table=source("components/admin/real-orders-table.tsx");
+ const detail=source("components/admin/order-detail-dialog.tsx");
+ const status=source("components/admin/order-status.tsx");
+ const api=source("app/api/admin/real-orders/[id]/route.ts");
+ const labels=source("lib/admin-order-labels.ts");
+ assert.match(table,/className="admin-order-link"/);
+ assert.match(table,/setSelected\(o.id\)/);
+ assert.match(table,/OrderDetailDialog/);
+ for(const field of ["customer_name","customer_email","customer_phone","shipping_address","billing_address","pickup_point","company","customer_note","items","subtotal_minor","cod_minor","total_minor"]){
+  assert.ok(detail.includes(field),"Missing order detail field: "+field);
+ }
+ assert.match(detail,/tel:/);
+ assert.match(detail,/mailto:/);
+ assert.match(api,/export async function GET/);
+ assert.match(api,/guard\(\)/);
+ assert.match(api,/Cache-Control/);
+ assert.match(api,/customer_order_items/);
+ assert.match(api,/shipping_address/);
+ assert.match(labels,/Nová – čeká na potvrzení/);
+ assert.match(labels,/Připravená k vyzvednutí/);
+ assert.match(status,/orderStatusLabels\[value\]/);
+ assert.doesNotMatch(status,/<span>\{current\}<\/span>/);
+});
+test("floating shopping cart is located at bottom edge of the viewport",()=>{
+ const css=source("app/storefront.css");
+ assert.match(css,/\.floating-cart\s*\{[^}]*bottom:\s*calc\(1\.25rem \+ env\(safe-area-inset-bottom\)\)/);
+ assert.doesNotMatch(css,/bottom:\s*calc\(6\.75rem \+ env\(safe-area-inset-bottom\)\)/);
+});
