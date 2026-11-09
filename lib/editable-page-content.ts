@@ -21,6 +21,7 @@ export const pageBlockSchema=z.object({
  runs:z.array(inlineRunSchema).min(1).max(150),
  align:z.enum(["left","center","right","justify"]).default("left"),
  font:z.enum(["default","serif","sans"]).default("default"),
+ color:z.enum(["default","ink","muted","blue","terracotta"]).default("default"),
  size:z.enum(["normal","small","large","xlarge"]).default("normal"),
  anchor:z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).optional()
 }).strict();
