@@ -344,3 +344,25 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
 
 /* Description editor */
 .description-editor{display:flex;flex-direction:column;gap:8px;font-size:14px}.description-editor-heading{display:flex;justify-content:space-between;align-items:center;font-weight:600}.description-editor-heading button{text-decoration:underline;text-underline-offset:3px;color:#404040}.description-toolbar{display:flex;flex-wrap:wrap;gap:5px;padding:8px;border:1px solid #dadada;border-radius:5px;background:#f5f5f2}.description-toolbar button{min-width:35px;min-height:35px;padding:5px 9px;background:white;border:1px solid #ddd;border-radius:4px}.description-toolbar button:hover{background:#e7e7e0}.description-editor textarea{width:100%;border:1px solid #d6d9e3;border-radius:4px;padding:12px;font:inherit;line-height:1.7;resize:vertical}.description-editor-count{align-self:flex-end;color:#666;font-size:12px}.description-live-preview{min-height:130px;border:1px solid #ddd;padding:16px;background:white;border-radius:4px}.formatted-description{white-space:normal;line-height:1.75;overflow-wrap:anywhere}.formatted-description p{margin:0 0 9px!important;font:inherit;line-height:inherit}.formatted-description h4{font-size:1.2em;font-weight:700;line-height:1.3;margin:12px 0 9px}.formatted-description .description-break{height:12px}.formatted-description .description-list-line{padding-left:12px}.extended-product-details .formatted-description p{white-space:pre-wrap}
+
+/* Word audit: shared content alignment and footer layout. */
+.site-footer{max-width:1440px;margin:0 auto;padding-left:5%;padding-right:5%}
+.site-footer .footer-top{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.2fr);align-items:start;gap:36px}
+.site-footer .footer-contact-block{min-width:0}
+.site-footer .footer-contact-block address{font-style:normal;line-height:1.7;margin:8px 0}
+.site-footer .footer-contact-block>p{margin:8px 0}
+.site-footer .footer-contact{margin-top:12px}
+.site-footer .footer-payment{display:flex;justify-content:flex-end;margin-top:24px}
+.site-footer .footer-payment img{width:100%;max-width:320px;height:auto}
+.legal-page{max-width:1440px;padding-left:5%;padding-right:5%}
+.legal-page .legal-section{max-width:100%;text-align:justify;hyphens:auto}
+.legal-page .legal-breadcrumb,.legal-page h1,.legal-page .legal-actions{text-align:left}
+.about-page{width:100%;max-width:1440px}
+.free-shipping-banner{width:100%;padding:9px 5%;background:#efefe8;border-bottom:1px solid #d1d1c9;text-align:center;font-size:14px;font-weight:700;letter-spacing:.015em}
+.catalog-contact .contact-section{max-width:1440px;margin:0 auto;padding:30px 5%;gap:30px}
+.catalog-contact .contact-section h2{font-size:clamp(1.7rem,3vw,2.6rem)}
+.collection .product-gallery .product-photo img{width:100%;height:100%;object-fit:contain}
+.product-dialog .product-gallery .product-photo img{width:100%;height:100%;object-fit:contain}
+.collection .product-gallery .gallery-arrow,.collection .product-gallery .gallery-counter,.collection .product-gallery .gallery-dots{display:none}
+@media(max-width:650px){.site-footer{padding-left:6%;padding-right:6%}.site-footer .footer-top{grid-template-columns:1fr;gap:26px}.site-footer .footer-social{grid-column:auto}.site-footer .footer-payment{justify-content:flex-start}.legal-page{padding-left:6%;padding-right:6%}.legal-page .legal-section{text-align:left}.free-shipping-banner{padding:8px 6%;font-size:12px}.catalog-contact .contact-section{padding:28px 6%}}
+@media print{.free-shipping-banner{display:none}}
