@@ -22,11 +22,11 @@ export default function Page(){
   <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
    <h2 className="mb-5 border-b border-stone-200 pb-4 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">Informace o použitých materiálech</h2>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Jak náš název napovídá, SádroSvět pro Vás vyrábí především sádrové dekorace. Některé naše výrobky plníme voskem nebo malujeme, a přinášíme tak další dílek k vytvoření Vaší ideální výzdoby.</p>
-   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Keramická sádra</h3>
+   <h3 className="materials-subheading text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Keramická sádra</h3>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">K tvoření našich výrobků používáme nevypalovanou keramickou sádru, která je oproti běžné sádře těžší, pevnější a bělejší. Výrobky nejsou určeny pro kontakt s otevřeným ohněm ani k použití jako svícny.</p>
-   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Sójový vosk a knoty</h3>
+   <h3 className="materials-subheading text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Sójový vosk a knoty</h3>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Svíčky vyrábíme z přírodního sójového vosku s bavlněnými nebo dřevěnými knoty. Vosk používáme k výrobě ozdobných výrobků. Přítomnost knotu neznamená, že je výrobek určen k zapálení. Vonné směsi do našich svíček nepoužíváme.</p>
-   <h3 className="mt-7 mb-3 text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Dekorativní svíčky</h3>
+   <h3 className="materials-subheading text-lg font-semibold leading-snug text-stone-900 sm:text-xl">Dekorativní svíčky</h3>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Všechny naše svíčky slouží výhradně jako dekorace. Mohou obsahovat sušené přírodní materiály a voskové ozdoby. <strong>Nejsou určeny jako zdroj světla ani tepla.</strong></p>
    <p className="mb-4 max-w-prose text-base leading-8 text-stone-700">Podle informací výrobce jsou všechny používané materiály zdravotně nezávadné.</p>
   </section>
