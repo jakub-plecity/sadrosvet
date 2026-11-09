@@ -114,3 +114,21 @@ test("terms describe decorative candles without the removed ignition-prohibition
  assert.doesNotMatch(legal,/se nesmějí zapalovat/);
  assert.doesNotMatch(legal,/zákaz zapalování/);
 });
+
+test("SEO includes accented and unaccented SádroSvět brand searches",()=>{
+ const layout=source("app/layout.tsx");
+ assert.match(layout,/sadrosvet chrudim/);
+ assert.match(layout,/SádroSvět Chrudim/);
+ assert.match(layout,/sadrosvet\.cz/);
+ assert.match(layout,/sádrové dekorace/);
+ assert.match(layout,/keywords:/);
+ assert.match(layout,/canonical:"\/"/);
+ const about=source("app/o-nas/page.tsx");
+ assert.match(about,/sadrosvet chrudim/);
+ assert.match(about,/alternates:\{canonical:"\/o-nas"\}/);
+ for(const route of ["obchodni-podminky","doprava-a-platba","vraceni-zbozi","ochrana-osobnich-udaju","material-a-bezpecnostni-informace"]){
+  const page=source("app/"+route+"/page.tsx");
+  assert.match(page,/keywords:/);
+  assert.match(page,/canonical:/);
+ }
+});
