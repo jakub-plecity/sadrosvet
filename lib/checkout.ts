@@ -27,9 +27,13 @@ export const deliverySchema=z.object({service:z.enum(["personal-pickup","balikov
 export type Delivery=z.infer<typeof deliverySchema>;
 export const contactSchema=z.object({name:z.string().trim().min(3,"Vyplňte jméno a příjmení.").max(120),email:z.string().trim().email("Zadejte platný e-mail."),phone:z.string().transform(v=>v.replace(/[\s()-]/g,"")).refine(v=>/^(?:\+420|\+421)?[67]\d{8}$/.test(v),"Zadejte české nebo slovenské mobilní číslo.")});
 export const addressSchema=z.object({street:z.string().trim().min(2,"Vyplňte ulici.").max(120),house:z.string().trim().min(1,"Vyplňte číslo domu.").max(20),city:z.string().trim().min(2,"Vyplňte město.").max(120),zip:z.string().transform(v=>v.replace(/\s/g,"")).refine(v=>/^[1-7]\d{4}$/.test(v),"Zadejte české PSČ.")});
-export function deliveryPrice(service:ServiceId){return shippingServices.find(s=>s.id===service)?.priceMinor??null;}
+export const FREE_SHIPPING_THRESHOLD_MINOR=150000;
+export function deliveryPrice(service:ServiceId,subtotalMinor=0){
+ const price=shippingServices.find(s=>s.id===service)?.priceMinor??null;
+ return price!==null&&subtotalMinor>=FREE_SHIPPING_THRESHOLD_MINOR?0:price;
+}
 export function quote(subtotalMinor:number,delivery:Delivery){
- const shippingMinor=deliveryPrice(delivery.service);
+ const shippingMinor=deliveryPrice(delivery.service,subtotalMinor);
  if(shippingMinor===null)throw new Error("Tato doprava zatím není dostupná.");
  const selected=shippingServices.find(s=>s.id===delivery.service)!;
  const codMinor=delivery.payment==="cod"?selected.codMinor:0;
