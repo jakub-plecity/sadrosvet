@@ -137,6 +137,7 @@ test("launch dashboard separates configuration from live verification",()=>{
  const panel=source("components/admin/launch-readiness.tsx");
  assert.match(panel,/SEO a indexování Google/);
  assert.match(panel,/Nasazení a veřejná doména/);
+ assert.match(panel,/Fotografie a přechod na Supabase/);
  assert.match(panel,/Skutečná expedice a API dopravců/);
  assert.match(panel,/Závěrečný test objednávky/);
  assert.match(panel,/Administrace produktů a kategorií/);
