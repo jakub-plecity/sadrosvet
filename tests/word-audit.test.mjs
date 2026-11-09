@@ -63,11 +63,11 @@ test("categories can be safely removed from admin without deleting products",()=
  const api=source("app/api/categories/route.ts");
  const admin=source("app/admin/portal.tsx");
  const server=source("lib/server.ts");
- assert.match(api,/export async function DELETE\\(request:Request\\)/);
+ assert.match(api,/export async function DELETE\(request:Request\)/);
  assert.match(api,/SELECT id FROM products/);
  assert.match(api,/category-hidden:/);
  assert.match(server,/category-hidden:/);
  assert.match(admin,/Spravovat kategorie/);
  assert.match(admin,/categoryToDelete/);
- assert.match(admin,/deleteCategory\\(\\)/);
+ assert.match(admin,/deleteCategory\(\)/);
 });
