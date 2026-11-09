@@ -398,3 +398,23 @@ footer{border-top:0;align-items:center}footer .wordmark img{width:62px;height:62
  .legal-page h2,.legal-page .withdrawal-document h2{margin-bottom:12pt}
  .legal-page h3{margin-bottom:9pt}
 }
+
+
+/* Keep text visually separated on both sides of every new heading.
+   Applies to Terms, Privacy, Shipping, Returns, Materials and About. */
+.legal-page :is(p,ul,ol,dl,blockquote) + :is(h2,h3){margin-top:36px}
+.legal-page .legal-section + .legal-section{margin-top:48px}
+.legal-page .legal-section > :is(p,ul,ol,dl,blockquote) + :is(h2,h3){margin-top:36px}
+.about-page .about-chapter :is(p,ul,ol,blockquote) + :is(h2,h3){margin-top:36px}
+.about-page .about-chapter > p + .about-highlight{margin-top:36px}
+@media(max-width:650px){
+ .legal-page :is(p,ul,ol,dl,blockquote) + :is(h2,h3),
+ .legal-page .legal-section > :is(p,ul,ol,dl,blockquote) + :is(h2,h3),
+ .about-page .about-chapter :is(p,ul,ol,blockquote) + :is(h2,h3){margin-top:28px}
+ .legal-page .legal-section + .legal-section{margin-top:38px}
+ .about-page .about-chapter > p + .about-highlight{margin-top:28px}
+}
+@media print{
+ .legal-page :is(p,ul,ol,dl,blockquote) + :is(h2,h3){margin-top:16pt}
+ .legal-page .legal-section + .legal-section{margin-top:20pt}
+}

@@ -11,7 +11,7 @@ export const legalSections = [
   {
     "title": "2 Výrobky a jejich určení",
     "paragraphs": [
-      "2.1 Prodáváme sádrové dekorace a dekorativní výrobky ve tvaru svíček. Všechny výrobky jsou výhradně ozdobné. Výrobky označené jako dekorativní svíčky se nesmějí zapalovat a nejsou určeny jako zdroj světla nebo tepla. Výrobu na přání nabízíme po individuální domluvě. Způsob a termín platby sjednáme u každé zakázky zvlášť a písemně je potvrdíme před závazným objednáním. Poptávku můžete poslat kontaktním formulářem nebo e-mailem; sama o sobě není závaznou objednávkou. Před závazným objednáním společně písemně odsouhlasíme provedení, celkovou cenu, dopravu, platbu a termín dodání. Pro takto sjednanou zakázku platí individuálně potvrzený termín.",
+      "2.1 Prodáváme sádrové dekorace a dekorativní výrobky ve tvaru svíček. Všechny výrobky jsou výhradně ozdobné. Výrobky označené jako dekorativní svíčky nejsou určeny jako zdroj světla ani tepla. Výrobu na přání nabízíme po individuální domluvě. Způsob a termín platby sjednáme u každé zakázky zvlášť a písemně je potvrdíme před závazným objednáním. Poptávku můžete poslat kontaktním formulářem nebo e-mailem; sama o sobě není závaznou objednávkou. Před závazným objednáním společně písemně odsouhlasíme provedení, celkovou cenu, dopravu, platbu a termín dodání. Pro takto sjednanou zakázku platí individuálně potvrzený termín.",
       "2.2 Rozměry, materiál, barevné provedení, cena a případná další omezení použití jsou uvedeny u konkrétního výrobku. Při manipulaci a údržbě postupujte podle informací u výrobku a přiložených pokynů. Dekorace nejsou hračkami ani výrobky určenými ke konzumaci; chraňte je před dětmi, poškozením a zdroji tepla.",
       "2.3 Vlastnosti ruční výroby, například drobné povrchové nebo barevné odchylky, popisujeme u výrobku, pokud se jej týkají. Ruční výroba sama o sobě nevylučuje odpovědnost za vady. Dodané zboží musí odpovídat sjednaným vlastnostem a zákonným požadavkům."
     ]
@@ -68,7 +68,7 @@ export const legalSections = [
       "7.6 Poskytněte potřebnou součinnost pro posouzení vady a podle dohody zpřístupněte zboží. Převezmeme je k odstranění vady na vlastní náklady. U oprávněné reklamace máte právo i na náhradu účelně vynaložených nákladů, například přiměřeného poštovného; náklady nám doložte.",
       "7.7 Vydáme písemné potvrzení o datu uplatnění reklamace, jejím obsahu, požadovaném způsobu vyřízení a vašich kontaktních údajích pro informování. Reklamaci včetně odstranění vady vyřídíme a informujeme vás nejpozději do 30 dnů od uplatnění, pokud se s vámi výslovně nedohodneme na delší lhůtě. Potřebnou součinnost poskytněte bez zbytečného odkladu. Po marném uplynutí zákonné nebo dohodnuté lhůty můžete odstoupit nebo požadovat přiměřenou slevu.",
       "7.8 Při vyřízení vydáme potvrzení o datu a způsobu vyřízení, případné opravě a době jejího trvání; zamítnutí písemně odůvodníme. Za uplatnění reklamace neúčtujeme poplatek.",
-      "7.9 Právo z vady nenáleží, pokud jste ji sami způsobili. Vadou není běžné opotřebení. Případné poškození nesprávným používáním se posuzuje podle skutečné příčiny; zákaz zapalování ani pokyny k péči nevylučují naši odpovědnost za výrobní vadu nebo nebezpečný výrobek."
+      "7.9 Právo z vady nenáleží, pokud jste ji sami způsobili. Vadou není běžné opotřebení. Případné poškození nesprávným používáním se posuzuje podle skutečné příčiny; bezpečnostní pokyny a pokyny k péči nevylučují naši odpovědnost za výrobní vadu nebo nebezpečný výrobek."
     ]
   },
   {

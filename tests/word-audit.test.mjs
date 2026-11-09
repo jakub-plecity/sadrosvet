@@ -98,3 +98,19 @@ test("information pages give headings visible separation from body text",()=>{
  assert.match(css,/\.legal-page h3\{margin-bottom:18px/);
  assert.match(css,/@media\(max-width:650px\)/);
 });
+
+test("legal and information pages space headings after paragraphs and sections",()=>{
+ const css=source("app/globals.css");
+ assert.match(css,/\.legal-page :is\(p,ul,ol,dl,blockquote\) \+ :is\(h2,h3\)\{margin-top:36px\}/);
+ assert.match(css,/\.legal-page \.legal-section \+ \.legal-section\{margin-top:48px\}/);
+ assert.match(css,/\.about-page \.about-chapter > p \+ \.about-highlight\{margin-top:36px\}/);
+ assert.match(css,/\.legal-page h2\{margin-bottom:24px\}/);
+ assert.match(css,/\.legal-page h3\{margin-bottom:18px/);
+});
+
+test("terms describe decorative candles without the removed ignition-prohibition sentence",()=>{
+ const legal=source("lib/legal-content.ts");
+ assert.match(legal,/dekorativní svíčky nejsou určeny jako zdroj světla ani tepla/);
+ assert.doesNotMatch(legal,/se nesmějí zapalovat/);
+ assert.doesNotMatch(legal,/zákaz zapalování/);
+});
