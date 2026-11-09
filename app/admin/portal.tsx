@@ -40,7 +40,19 @@ export default function Admin({adminRestricted}:{adminRestricted:boolean}){
  toast.success("Kategorie byla odstraněna.");setCategoryToDelete(null);await load();
  }catch(e){toast.error(e instanceof Error?e.message:"Kategorii nelze odstranit.");}finally{setBusy(false);}}
  async function deleteProduct(){if(!deleteTarget)return;setBusy(true);try{
- const r=await fetch("/api/products/"+deleteTarget.id,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:deleteTarget.revision,permanent:true})});const data=await r.json() as {error?:string};if(!r.ok)throw new Error(data.error??"Produkt nelze odstranit.");setDeleteTarget(null);toast.success("Produkt je odstraněný.");await load();
+ const r=await fetch("/api/products/"+deleteTarget.id,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:deleteTarget.revision,permanent:true})});
+ const data=await r.json() as {error?:string;canArchive?:boolean};
+ if(!r.ok){
+  if(r.status===409&&data.canArchive===true){
+   const product=deleteTarget;
+   setDeleteTarget(null);
+   setRemove(product);
+   toast.info("Produkt je součástí objednávky. Pro skrytí z nabídky potvrďte archivaci.");
+   return;
+  }
+  throw new Error(data.error??"Produkt nelze odstranit.");
+ }
+ setDeleteTarget(null);toast.success("Produkt je trvale odstraněný.");await load();
  }catch(e){toast.error(e instanceof Error?e.message:"Produkt nelze odstranit.");}finally{setBusy(false);}}
  async function upload(file:File){if((editor?.images?.length??0)>=10){setSaveError("Nejvýše 10 fotografií na produkt.");return;}setUploading(true);setSaveError("");try{const form=new FormData();form.append("file",file);const r=await fetch("/api/upload",{method:"POST",body:form});const data=await r.json() as {error?:string;image:string};if(!r.ok)throw new Error(data.error??"Požadavek se nezdařil.");setEditor(p=>p?{...p,images:[...new Set([...(p.images??(p.image?[p.image]:[])),data.image])].slice(0,10),image:p.image||data.image}:p);toast.success("Fotografie je nahraná.");}catch(e){setSaveError(e instanceof Error?e.message:"Fotografii nelze nahrát.");}finally{setUploading(false);}}
  const orderingLocked=search.trim().length>0||filter!=="all";
