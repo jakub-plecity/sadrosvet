@@ -114,3 +114,11 @@ test("terms describe decorative candles without the removed ignition-prohibition
  assert.doesNotMatch(legal,/se nesmějí zapalovat/);
  assert.doesNotMatch(legal,/zákaz zapalování/);
 });
+
+test("materials headings have explicit gaps above and below",()=>{
+ const page=source("app/material-a-bezpecnostni-informace/page.tsx");
+ const css=source("app/globals.css");
+ assert.equal((page.match(/materials-subheading/g)||[]).length,3);
+ assert.match(css,/\.legal-page \.materials-subheading\{margin-top:48px;margin-bottom:24px\}/);
+ assert.match(css,/\.legal-page \.materials-subheading\{margin-top:36px;margin-bottom:20px\}/);
+});
