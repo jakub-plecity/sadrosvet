@@ -79,6 +79,6 @@ test("deleting an order-referenced product offers archive without cascading",()=
  assert.match(endpoint,/canArchive:true/);
  assert.match(endpoint,/23503/);
  assert.doesNotMatch(endpoint,/ON DELETE CASCADE/);
- assert.match(admin,/data\\.canArchive===true/);
- assert.match(admin,/setRemove\\(product\\)/);
+ assert.match(admin,/data\.canArchive===true/);
+ assert.match(admin,/setRemove\(product\)/);
 });
