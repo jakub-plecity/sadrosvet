@@ -71,3 +71,14 @@ test("categories can be safely removed from admin without deleting products",()=
  assert.match(admin,/categoryToDelete/);
  assert.match(admin,/deleteCategory\(\)/);
 });
+
+test("deleting an order-referenced product offers archive without cascading",()=>{
+ const endpoint=source("app/api/products/[id]/route.ts");
+ const admin=source("app/admin/portal.tsx");
+ assert.match(endpoint,/customer_order_items WHERE product_id/);
+ assert.match(endpoint,/canArchive:true/);
+ assert.match(endpoint,/23503/);
+ assert.doesNotMatch(endpoint,/ON DELETE CASCADE/);
+ assert.match(admin,/data\\.canArchive===true/);
+ assert.match(admin,/setRemove\\(product\\)/);
+});
