@@ -3,7 +3,7 @@ import type {Metadata} from "next";
 
 export const metadata:Metadata={
  title:"Materiál a bezpečnostní informace · SádroSvět",
- description:"Informace o použitých materiálech a bezpečnostní pokyny pro svíčky a dekorace SádroSvět."
+ description:"Jak pečovat o sádrové dekorace a dekorativní svíčky SádroSvět? Informace o keramické sádře, sójovém vosku a bezpečném používání dekorací.",keywords:["SádroSvět","sádrové dekorace materiál","keramická sádra","dekorativní svíčky","sójový vosk","péče o sádrové výrobky"],alternates:{canonical:"/material-a-bezpecnostni-informace"}
 };
 
 const safetyInstructions=[

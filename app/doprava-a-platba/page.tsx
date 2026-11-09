@@ -2,7 +2,7 @@ import {LegalPage} from "@/components/legal-page";
 import {shippingServices} from "@/lib/checkout";
 import {publicOnlinePaymentsEnabled} from "@/lib/payment-availability";
 import type {Metadata} from "next";
-export const metadata:Metadata={title:"Doprava a platba · SádroSvět",description:"Doručení objednávek a způsoby platby v e-shopu SádroSvět. Informace o online platbách přes Comgate."};
+export const metadata:Metadata={title:"Doprava a platba | SádroSvět",description:"Jak doručujeme sádrové dekorace po ČR? Zásilkovna, Balíkovna, osobní odběr v Chrudimi, dobírka a dostupné online platby na SádroSvět.",keywords:["SádroSvět doprava","sadrosvet chrudim","Zásilkovna","Balíkovna","osobní odběr Chrudim"],alternates:{canonical:"/doprava-a-platba"}};
 export const dynamic="force-dynamic";
 export default function Page(){const online=publicOnlinePaymentsEnabled();return <LegalPage title="Doprava a platba">
 <section className="mb-10 rounded-2xl border border-stone-200 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9">
