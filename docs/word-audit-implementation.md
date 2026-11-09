@@ -52,3 +52,19 @@ V repozitáři `lib/catalog.ts` je **20 historických demonstračních seed prod
 - Ukázkové produkty: ukázat konkrétní seznam ke schválení, bez mazání.
 - Kuba test miska: trvale odstranit po ověření produkčního záznamu a oprávněného přístupu.
 - Kontaktní formulář pod katalogem: odstranit, kontakt ponechat v zápatí.
+
+## Schválení k 9. 11. 2026: všech 20 demo produktů odstranit
+
+Vlastník schválil trvalé odstranění **všech 20** historických demo položek. Jejich definice už byly odstraněny ze souboru `lib/catalog.ts`, takže se z něj znovu nevytvoří.
+
+Pro bezpečné **samostatné** smazání odpovídajících záznamů ze Supabase je připraven skript `scripts/remove-approved-demo-products.mjs`. Script používá přesné ID **i název a `sample=1`**, aby omylem nesmazal skutečný produkt, a při odkazu z historické objednávky nic nesmaže. V příkazu `--check` neprovádí změny.
+
+```sh
+node scripts/remove-approved-demo-products.mjs --check
+# Po kontrole výsledku a ověřené záloze:
+ALLOW_DEMO_PRODUCT_DELETION=true node scripts/remove-approved-demo-products.mjs --apply
+```
+
+Tyto příkazy musí být spuštěny v autorizovaném prostředí s přístupem ke správné produkční Supabase a archivem záloh. **Současná práce přes GitHub konektor je nespouští a nepotvrzuje produkční smazání.**
+
+Produkt `Kuba test miska` není součástí těchto 20 ID. Jeho schválené samostatné trvalé odstranění stále vyžaduje ověření v produkční administraci.
