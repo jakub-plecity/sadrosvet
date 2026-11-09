@@ -38,3 +38,14 @@ test("product reorder is locked while filtered",()=>{
  assert.match(admin,/orderingLocked=search\.trim\(\)\.length>0\|\|filter!=="all"/);
  assert.match(admin,/draggable=\{!busy&&!orderingLocked\}/);
 });
+
+test("the 20 historical sample products cannot be seeded again",()=>{
+ const catalog=source("lib/catalog.ts");
+ assert.match(catalog,/export const samples:Product\[\] = \[\];/);
+ assert.match(catalog,/export const additionalSamples:Product\[\] = \[\];/);
+ assert.doesNotMatch(catalog,/id:"sample-vase"/);
+ const cleanup=source("scripts/remove-approved-demo-products.mjs");
+ assert.match(cleanup,/ALLOW_DEMO_PRODUCT_DELETION/);
+ assert.match(cleanup,/approved\.size !== 20/);
+ assert.match(cleanup,/customer_order_items/);
+});
