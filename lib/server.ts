@@ -22,14 +22,16 @@ export function failure(error:unknown){console.error("SádroSvět API",error);if
 
 export async function readCategories():Promise<string[]>{
  const db=database();
- const [saved,used]=await Promise.all([
+ const [saved,used,hidden]=await Promise.all([
   db.prepare("SELECT value FROM settings WHERE key LIKE 'category:%' ORDER BY value").all<{value:string}>(),
-  db.prepare("SELECT DISTINCT category FROM products ORDER BY category").all<{category:string}>()
+  db.prepare("SELECT DISTINCT category FROM products ORDER BY category").all<{category:string}>(),
+  db.prepare("SELECT key FROM settings WHERE key LIKE 'category-hidden:%'").all<{key:string}>()
  ]);
+ const blocked=new Set(hidden.results.map(r=>r.key.slice("category-hidden:".length)));
  const names=new Map<string,string>();
  for(const name of [...catalogCategories,...saved.results.map(r=>r.value),...used.results.map(r=>r.category)]){
   const clean=name.normalize("NFC").trim().replace(/\s+/g," ");
-  if(clean&&!names.has(clean.toLocaleLowerCase("cs-CZ")))names.set(clean.toLocaleLowerCase("cs-CZ"),clean);
+  if(clean&&!blocked.has(clean.toLocaleLowerCase("cs-CZ"))&&!names.has(clean.toLocaleLowerCase("cs-CZ")))names.set(clean.toLocaleLowerCase("cs-CZ"),clean);
  }
  return [...names.values()];
 }

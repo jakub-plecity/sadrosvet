@@ -15,7 +15,7 @@ test("business contact remains in footer",()=>{
  assert.match(footer,/sadrosvet@seznam\.cz/);
  assert.match(footer,/\+420 775 014 878/);
  assert.match(footer,/Petr Valenta/);
- assert.doesNotMatch(footer,/href="\/admin"/);
+ assert.match(footer,/href="\/admin"/);
 });
 
 test("catalog hides photo navigation but product detail enables it",()=>{
@@ -48,4 +48,26 @@ test("the 20 historical sample products cannot be seeded again",()=>{
  assert.match(cleanup,/ALLOW_DEMO_PRODUCT_DELETION/);
  assert.match(cleanup,/approved\.size !== 20/);
  assert.match(cleanup,/customer_order_items/);
+});
+
+
+test("social links have Instagram and Facebook without TikTok",()=>{
+ const socials=source("components/social-links.tsx");
+ assert.match(socials,/instagram\.com\/sadrosvet/);
+ assert.match(socials,/facebook\.com/);
+ assert.doesNotMatch(socials,/tiktok\.com|TikTok/);
+});
+
+
+test("categories can be safely removed from admin without deleting products",()=>{
+ const api=source("app/api/categories/route.ts");
+ const admin=source("app/admin/portal.tsx");
+ const server=source("lib/server.ts");
+ assert.match(api,/export async function DELETE\(request:Request\)/);
+ assert.match(api,/SELECT id FROM products/);
+ assert.match(api,/category-hidden:/);
+ assert.match(server,/category-hidden:/);
+ assert.match(admin,/Spravovat kategorie/);
+ assert.match(admin,/categoryToDelete/);
+ assert.match(admin,/deleteCategory\(\)/);
 });
