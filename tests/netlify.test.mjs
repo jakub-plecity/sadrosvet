@@ -42,6 +42,7 @@ const output = await build({
     export * as packetaReview from './app/api/admin/real-orders/[id]/packeta-review/route';
     export {default as runPacketaWorker} from './netlify/functions/packeta-worker.mjs';
     export * as realCheckout from './app/api/checkout/route';
+    export * as realAdminList from './app/api/admin/real-orders/route';
     export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
     export * as packetaShipment from './app/api/admin/real-orders/[id]/shipment/route';
     export * as packetaReadiness from './app/api/admin/packeta-readiness/route';
@@ -350,6 +351,9 @@ test('verified Comgate payment splits Packeta parcels, preserves weights and rec
   const completed=await readJob();
   assert.equal(completed.state,'created');
   assert.deepEqual(completed.parcels.map(p=>p.barcode),['Z123456789','Z987654321']);
+  const list=await app.realAdminList.GET();
+  assert.equal(list.status,200);
+  assert.deepEqual((await list.json()).orders.find(order=>order.id===id).tracking_codes,['Z123456789','Z987654321']);
  }finally{
   globalThis.fetch=originalFetch;
   for(const [key,value] of Object.entries(originalEnv)){
