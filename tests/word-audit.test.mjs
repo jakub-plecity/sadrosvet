@@ -143,10 +143,10 @@ test("each legal and information page supports published rich-text overrides",()
   assert.match(file,/hideTitle/);
  }
 });
-test("admin page-editing tools appear at the bottom of administration",()=>{
+test("admin page-editing tools appear in the Editor tab",()=>{
  const portal=source("app/admin/portal.tsx");
  const ui=source("components/admin/content-pages.tsx");
- assert.match(portal,/<AdminContentPages\/><\/main>/);
+ assert.match(portal,/<TabsContent value="editor"[^>]*>\s*<AdminContentPages\/>\s*<\/TabsContent>/);
  assert.match(ui,/Uložit a publikovat/);
  assert.match(ui,/Vrátit původní znění/);
  assert.match(ui,/Doprava a platba|editablePageNames/);
