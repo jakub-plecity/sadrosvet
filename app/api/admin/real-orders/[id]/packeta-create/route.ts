@@ -3,7 +3,7 @@ import {getDatabase} from "../../../../../../lib/database-pool.mjs";
 import {createPacketaPacket} from "@/lib/packeta-api";
 import {z} from "zod";
 export const dynamic="force-dynamic";
-const schema=z.object({weightGrams:z.number().int().min(1).max(30000)}).strict();
+const schema=z.object({weightGrams:z.number().int().min(1).max(15000)}).strict();
 type Client={query:(sql:string,args?:unknown[])=>Promise<{rows:Record<string,unknown>[],rowCount:number|null}>;release:()=>void};
 export async function POST(request:Request,ctx:{params:Promise<{id:string}>}){
  const denied=await guard(request);if(denied)return denied;
@@ -18,6 +18,9 @@ export async function POST(request:Request,ctx:{params:Promise<{id:string}>}){
   const o=r.rows[0];
   if(!o){await client.query("ROLLBACK");begun=false;return Response.json({error:"Objednávka nenalezena."},{status:404});}
   if(!["packeta-point","packeta-address"].includes(String(o.service))||["cancelled","shipped","completed"].includes(String(o.status))){await client.query("ROLLBACK");begun=false;return Response.json({error:"Zásilku pro tuto objednávku nelze vytvořit."},{status:409});}
+  if(o.payment_method==="comgate"&&o.payment_status!=="paid"){await client.query("ROLLBACK");begun=false;return Response.json({error:"Online objednávka ještě není zaplacená."},{status:409});}
+  const auto=await client.query("SELECT 1 FROM packeta_auto_jobs WHERE order_id=$1 AND state<>'manual'",[id]);
+  if(auto.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Zásilky této objednávky spravuje automatické napojení Zásilkovny."},{status:409});}
   const previous=await client.query("SELECT state,barcode FROM packeta_api_operations WHERE order_id=$1",[id]);
   if(previous.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Zásilka už byla založena nebo se její vytvoření musí nejprve prověřit v klientské sekci. API volání neopakuj.",state:previous.rows[0].state,barcode:previous.rows[0].barcode},{status:409});}
   const tracking=await client.query("SELECT external_tracking_code FROM order_shipments WHERE order_id=$1",[id]);
@@ -36,7 +39,7 @@ export async function POST(request:Request,ctx:{params:Promise<{id:string}>}){
   const packet=await createPacketaPacket({
    number:"SS-"+o.order_number,name,surname,email:String(o.customer_email),phone:String(o.customer_phone),
    addressId,weightGrams:data.weightGrams,
-   cod:Number(o.total_minor)/100,value:Number(o.subtotal_minor)/100,
+   cod:o.payment_method==="cod"?Number(o.total_minor)/100:0,value:Number(o.subtotal_minor)/100,
    ...(address?{street:address.street,house:address.house,city:address.city,zip:address.zip}:{})
   });
   const c=await db.connect() as Client;let trans=false;

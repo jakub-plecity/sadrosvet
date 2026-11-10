@@ -1,4 +1,5 @@
 import {getDatabase} from "../../../../lib/database-pool.mjs";
+import {planPacketaParcels} from "@/lib/packeta-parcels.mjs";
 import {verifyComgatePayment} from "@/lib/comgate";
 export const dynamic="force-dynamic";
 const plain={"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"};
@@ -52,8 +53,17 @@ export async function POST(request:Request){
     await client.query("UPDATE comgate_payments SET state='paid',updated_at=NOW(),verified_at=NOW() WHERE id=$1",[p.id]);
     // Test transactions must NEVER mark real orders paid.
     if(p.test===false&&String(p.order_status)!=="cancelled"){
-     const confirmed=await client.query("UPDATE customer_orders SET payment_status='paid',updated_at=NOW() WHERE id=$1 AND payment_method='comgate' AND payment_status='unpaid' AND status<>'cancelled' RETURNING customer_email",[p.order_id]);
+     const confirmed=await client.query("UPDATE customer_orders SET payment_status='paid',updated_at=NOW() WHERE id=$1 AND payment_method='comgate' AND payment_status='unpaid' AND status<>'cancelled' RETURNING customer_email,service",[p.order_id]);
      if(confirmed.rows.length){
+      if(confirmed.rows[0].service==="packeta-point"){
+       const items=await client.query("SELECT weight_grams,quantity,name,unit_price_minor FROM customer_order_items WHERE order_id=$1 ORDER BY product_id,name",[p.order_id]);
+       const {parcels,reason}=planPacketaParcels(items.rows as Parameters<typeof planPacketaParcels>[0]);
+       await client.query(`INSERT INTO packeta_auto_jobs(order_id,state,parcels,reason)
+        SELECT $1,$2,$3::jsonb,$4
+        WHERE NOT EXISTS(SELECT 1 FROM packeta_api_operations WHERE order_id=$1)
+          AND NOT EXISTS(SELECT 1 FROM order_shipments WHERE order_id=$1)
+        ON CONFLICT(order_id) DO NOTHING`,[p.order_id,reason?"manual":"queued",JSON.stringify(parcels),reason]);
+      }
       await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3) ON CONFLICT(order_id,event_type,recipient) DO NOTHING",[crypto.randomUUID(),p.order_id,confirmed.rows[0].customer_email]);
       await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3) ON CONFLICT(order_id,event_type,recipient) DO NOTHING",[crypto.randomUUID(),p.order_id,"sadrosvet@seznam.cz"]);
      }

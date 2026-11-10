@@ -4,7 +4,7 @@ import {z} from "zod";
 export const dynamic="force-dynamic";
 const schema=z.object({
  trackingCode:z.string().trim().regex(/^[A-Za-z0-9-]{4,80}$/),
- weightGrams:z.number().int().min(1).max(30000),
+ weightGrams:z.number().int().min(1).max(25000),
  note:z.string().trim().max(400).default("")
 }).strict();
 type Client={query:(sql:string,params?:unknown[])=>Promise<{rows:Record<string,unknown>[],rowCount:number|null}>;release:()=>void};
@@ -23,6 +23,9 @@ export async function PUT(request:Request,ctx:{params:Promise<{id:string}>}){
   if(!order.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Objednávka nenalezena."},{status:404});}
   if(!String(order.rows[0].service).startsWith("packeta-")){await client.query("ROLLBACK");begun=false;return Response.json({error:"Tato objednávka není pro Zásilkovnu."},{status:409});}
   if(["cancelled","completed","shipped"].includes(String(order.rows[0].status))){await client.query("ROLLBACK");begun=false;return Response.json({error:"U uzavřené či odeslané objednávky nelze přepisovat zásilku."},{status:409});}
+  if(order.rows[0].service==="packeta-point"&&input.weightGrams>15000){await client.query("ROLLBACK");begun=false;return Response.json({error:"Balík na výdejní místo Zásilkovny smí vážit nejvýše 15 kg."},{status:400});}
+  const auto=await client.query("SELECT 1 FROM packeta_auto_jobs WHERE order_id=$1 AND state<>'manual'",[id]);
+  if(auto.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Zásilky této objednávky spravuje automatické napojení Zásilkovny."},{status:409});}
   const old=await client.query("SELECT handed_over_at FROM order_shipments WHERE order_id=$1 FOR UPDATE",[id]);
   if(old.rows[0]?.handed_over_at){await client.query("ROLLBACK");begun=false;return Response.json({error:"Předanou zásilku nelze přepisovat."},{status:409});}
   await client.query(`INSERT INTO order_shipments(order_id,carrier,external_tracking_code,weight_grams,dispatch_note)

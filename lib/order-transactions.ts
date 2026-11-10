@@ -1,6 +1,7 @@
 import "server-only";
 import {getDatabase} from "./database-pool.mjs";
 import type {RealOrderInput} from "./order-input";
+import {productWeightGrams} from "./packeta-parcels.mjs";
 import {quote} from "./checkout";
 type Row=Record<string,unknown>;
 type Client={query:(sql:string,params?:unknown[])=>Promise<{rows:Row[],rowCount:number|null}>;release:()=>void};
@@ -21,7 +22,7 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
   }
   // Lock products in a stable order to avoid deadlocks with overlapping carts.
   const ids=[...input.items.map(i=>i.id)].sort();
-  const result=await client.query("SELECT id,name,price_minor,stock,status FROM products WHERE id=ANY($1::text[]) ORDER BY id FOR UPDATE",[ids]);
+  const result=await client.query("SELECT id,name,price_minor,stock,status,weight FROM products WHERE id=ANY($1::text[]) ORDER BY id FOR UPDATE",[ids]);
   const indexed=new Map(result.rows.map(p=>[String(p.id),p]));
   let subtotal=0;
   const details=[];
@@ -30,7 +31,7 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
    if(!product||product.status!=="active"||Number(product.stock)<item.quantity)throw new OrderUnavailable("Některý produkt již není dostupný v požadovaném množství.");
    const unit=Number(product.price_minor);
    subtotal+=unit*item.quantity;
-   details.push({id:item.id,name:String(product.name),unit,quantity:item.quantity});
+   details.push({id:item.id,name:String(product.name),unit,quantity:item.quantity,weightGrams:productWeightGrams(product.weight)});
   }
   const prices=quote(subtotal,input.delivery);
   if(prices.rateKind==="illustrative")throw new OrderUnavailable("Ceny Zásilkovny zatím nejsou schválené pro skutečný prodej.");
@@ -50,8 +51,8 @@ export async function createRealOrder(input:RealOrderInput,requestHash:string){
    const updated=await client.query("UPDATE products SET stock=stock-$1,revision=revision+1,updated_at=$3 WHERE id=$2 AND stock >= $1 RETURNING id",
     [item.quantity,item.id,new Date().toISOString()]);
    if(!updated.rowCount)throw new OrderUnavailable("Produkt byl mezitím vyprodán.");
-   await client.query("INSERT INTO customer_order_items (order_id,product_id,name,unit_price_minor,quantity) VALUES($1,$2,$3,$4,$5)",
-    [input.id,item.id,item.name,item.unit,item.quantity]);
+   await client.query("INSERT INTO customer_order_items (order_id,product_id,name,unit_price_minor,quantity,weight_grams) VALUES($1,$2,$3,$4,$5,$6)",
+    [input.id,item.id,item.name,item.unit,item.quantity,item.weightGrams]);
   }
   if(payment!=="comgate"){
   await client.query("INSERT INTO order_email_outbox(id,order_id,event_type,recipient) VALUES ($1,$2,'placed',$3)",

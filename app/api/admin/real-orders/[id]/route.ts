@@ -25,7 +25,10 @@ export async function GET(_request:Request,context:{params:Promise<{id:string}>}
    const shipmentRows=await db.query("SELECT external_tracking_code,handed_over_at FROM order_shipments WHERE order_id=$1 LIMIT 1",[id]);
    if(shipmentRows.rows.length)shipment={external_tracking_code:shipmentRows.rows[0].external_tracking_code,handed_over_at:shipmentRows.rows[0].handed_over_at};
   }catch{ /* Optional shipment record; keep the remaining order detail available. */ }
-  return Response.json({order:{...order.rows[0],items:items.rows,shipment}},{headers});
+  const packetaJob=order.rows[0].service==="packeta-point"
+   ? (await db.query("SELECT state,parcels,reason,next_parcel FROM packeta_auto_jobs WHERE order_id=$1",[id])).rows[0]??null
+   : null;
+  return Response.json({order:{...order.rows[0],items:items.rows,shipment,packetaJob}},{headers});
  }catch(error){
   console.error("Admin order detail lookup",error);
   return Response.json({error:"Detail objednávky nelze načíst."},{status:503,headers});
@@ -48,7 +51,9 @@ export async function PATCH(request:Request,context:{params:Promise<{id:string}>
   if(!allowed[prev]?.includes(data.status)){await client.query("ROLLBACK");begun=false;return Response.json({error:"Tento přechod stavu není povolen."},{status:409});}
   if(data.status==="shipped"&&String(found.rows[0].service).startsWith("packeta-")){
    const shipment=await client.query("SELECT external_tracking_code FROM order_shipments WHERE order_id=$1 FOR UPDATE",[id]);
-   if(!shipment.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Před odesláním zadej číslo zásilky a její hmotnost."},{status:409});}
+   const job=await client.query("SELECT state FROM packeta_auto_jobs WHERE order_id=$1 AND state<>'manual'",[id]);
+   if(job.rows.length&&job.rows[0].state!=="created"){await client.query("ROLLBACK");begun=false;return Response.json({error:"Před odesláním musí být založené všechny balíky Zásilkovny."},{status:409});}
+   if(!job.rows.length&&!shipment.rows.length){await client.query("ROLLBACK");begun=false;return Response.json({error:"Před odesláním zadej číslo zásilky a její hmotnost."},{status:409});}
    await client.query("UPDATE order_shipments SET handed_over_at=NOW(),updated_at=NOW() WHERE order_id=$1",[id]);
   }
   if(data.status==="cancelled"&&found.rows[0].payment_method==="comgate"){

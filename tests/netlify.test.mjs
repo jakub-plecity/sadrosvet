@@ -4,6 +4,7 @@ import {readFile, readdir} from 'node:fs/promises';
 import {build} from 'esbuild';
 import {PGlite} from '@electric-sql/pglite';
 import {randomUUID} from 'node:crypto';
+import {planPacketaParcels, productWeightGrams} from '../lib/packeta-parcels.mjs';
 
 const postgres = new PGlite();
 const files = new Map();
@@ -36,6 +37,10 @@ const output = await build({
     export * as upload from './app/api/upload/route';
     export * as images from './app/api/images/[key]/route';
     export * as orders from './app/api/orders/route';
+    export {createRealOrder} from './lib/order-transactions';
+    export * as comgateNotify from './app/api/comgate/notify/route';
+    export * as packetaReview from './app/api/admin/real-orders/[id]/packeta-review/route';
+    export {default as runPacketaWorker} from './netlify/functions/packeta-worker.mjs';
     export * as realCheckout from './app/api/checkout/route';
     export * as realAdminStatus from './app/api/admin/real-orders/[id]/route';
     export * as packetaShipment from './app/api/admin/real-orders/[id]/shipment/route';
@@ -300,4 +305,63 @@ test('operational audit requires admin, reports public payment flags and never c
   process.env.COMGATE_ADMIN_ONLY='true';assert.equal((await (await app.launchAudit.GET()).json()).publicComgateEnabled,false);
   assert.equal((await postgres.query('SELECT count(*)::int AS count FROM customer_orders')).rows[0].count,before);
  }finally{state.cookie=oldCookie;for(const k of keys){if(saved[k]===undefined)delete process.env[k];else process.env[k]=saved[k];}}
+});
+
+test('verified Comgate payment splits Packeta parcels, preserves weights and recovers an ambiguous second submission', async () => {
+ const id=randomUUID(), product=randomUUID();
+ await postgres.query(`INSERT INTO products(id,name,description,category,price_minor,stock,image,images,status,sample,revision,updated_at,weight)
+  VALUES ($1,'Těžká dekorace','Test','Dekorace',15000,3,'/collection.png','[]','active',0,1,$2,'7 kg')`,[product,new Date().toISOString()]);
+ const delivery={service:'packeta-point',payment:'comgate',point:{id:'123',name:'Výdejna',address:'Chrudim',zip:'53701'}};
+ const amount=app.checkoutPrices.quote(45000,delivery).totalMinor;
+ const order=await app.createRealOrder({id,contact:{name:'Test Zákazník',email:'customer@example.com',phone:'777123456'},shippingAddress:null,billingAddress:null,company:null,note:'',items:[{id:product,quantity:3}],delivery,expectedTotalMinor:amount},'packeta-test');
+ await postgres.query("UPDATE products SET weight='2 g' WHERE id=$1",[product]);
+ const transId='TEST-123';
+ await postgres.query("INSERT INTO comgate_payments(id,order_id,trans_id,amount_minor,ref_id,test) VALUES ($1,$2,$3,$4,$5,false)",[randomUUID(),id,transId,amount,order.orderNumber]);
+ const originalFetch=globalThis.fetch;
+ const env={COMGATE_MERCHANT:'test-merchant',COMGATE_SECRET:'test-only',PACKETA_API_PASSWORD:'test-only',PACKETA_SENDER_INDICATION:'test-sender',ENABLE_REAL_CHECKOUT:'true'};
+ const originalEnv=Object.fromEntries(Object.keys(env).map(key=>[key,process.env[key]]));
+ Object.assign(process.env,env);
+ const calls=[];
+ globalThis.fetch=async (url,options)=>{
+  if(url==='https://payments.comgate.cz/v1.0/status')return new Response(new URLSearchParams({code:'0',merchant:env.COMGATE_MERCHANT,price:String(amount),test:'false',transId,status:'PAID',refId:order.orderNumber,curr:'CZK'}));
+  assert.equal(url,'https://www.zasilkovna.cz/api/rest');
+  calls.push(options.body);
+  if(calls.length===2)throw new Error('Response lost');
+  return new Response('<response><status>ok</status><result><id>123456789</id><barcode>Z123456789</barcode></result></response>');
+ };
+ try{
+  const notify=()=>app.comgateNotify.POST(new Request(origin+'/api/comgate/notify',{method:'POST',body:new URLSearchParams({transId,merchant:env.COMGATE_MERCHANT,status:'PAID'})}));
+  const readJob=async()=>(await postgres.query('SELECT * FROM packeta_auto_jobs WHERE order_id=$1',[id])).rows[0];
+  for(let attempt=0;attempt<2;attempt++)assert.equal((await notify()).status,200);
+  const planned=await readJob();
+  assert.deepEqual(planned.parcels.map(p=>[p.weightGrams,p.valueMinor,p.items[0].quantity]),[[15000,30000,2],[8000,15000,1]]);
+  assert.equal(calls.length,0);
+  await app.runPacketaWorker();
+  assert.match(calls[0],/<cod>0\.00<\/cod>.*<weight>15\.000<\/weight>/);
+  assert.match(calls[0],/<value>300\.00<\/value>/);
+  assert.equal((await readJob()).next_parcel,1);
+  await app.runPacketaWorker();
+  await app.runPacketaWorker();
+  assert.equal(calls.length,2);
+  assert.equal((await readJob()).state,'review');
+  await signedIn();
+  const response=await app.packetaReview.POST(request('/api/admin/real-orders/'+id+'/packeta-review',{parcel:2,barcode:'Z987654321'}),{params:Promise.resolve({id})});
+  assert.equal(response.status,200,await response.text());
+  const completed=await readJob();
+  assert.equal(completed.state,'created');
+  assert.deepEqual(completed.parcels.map(p=>p.barcode),['Z123456789','Z987654321']);
+ }finally{
+  globalThis.fetch=originalFetch;
+  for(const [key,value] of Object.entries(originalEnv)){
+   if(value===undefined)delete process.env[key];else process.env[key]=value;
+  }
+ }
+});
+
+
+test('Packeta packing adds 1 kg to each parcel and sends invalid or indivisible weights to manual review', () => {
+ const item={weight_grams:productWeightGrams('12,5 kg'),quantity:3,name:'Dekorace',unit_price_minor:1000};
+ assert.deepEqual(planPacketaParcels([item]).parcels.map(p=>p.weightGrams),[13500,13500,13500]);
+ assert.equal(planPacketaParcels([{...item,weight_grams:14001}]).reason,'oversize-item');
+ assert.equal(planPacketaParcels([{...item,weight_grams:productWeightGrams('100')}]).reason,'missing-weight');
 });
