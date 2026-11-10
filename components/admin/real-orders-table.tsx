@@ -4,12 +4,17 @@ import {money} from "@/lib/catalog";
 import {RefreshCw,Search} from "lucide-react";
 import {OrderStatus} from "@/components/admin/order-status";
 import {OrderDetailDialog} from "@/components/admin/order-detail-dialog";
-import {paymentMethodLabel,paymentStatusLabel,type OrderState} from "@/lib/admin-order-labels";
+import {orderStatusLabels,paymentMethodLabel,paymentStatusLabel,type OrderState} from "@/lib/admin-order-labels";
 type Item={name:string;quantity:number};
 type Order={
  id:string;order_number:string;created_at:string;customer_name:string;customer_email:string;customer_phone:string;
  payment_method:string;payment_status:string;status:string;total_minor:number;service:string;items:Item[]|string;
 };
+const orderStates=Object.keys(orderStatusLabels);
+function statusRank(status:string){
+ const index=orderStates.indexOf(status);
+ return index===-1?orderStates.length:index;
+}
 const itemsOf=(value:Order["items"]):Item[]=>{
  if(Array.isArray(value))return value;
  try{const parsed=JSON.parse(value);return Array.isArray(parsed)?parsed:[];}catch{return [];}
@@ -19,6 +24,7 @@ export function RealOrdersTable(){
  const [selected,setSelected]=useState<string|null>(null);
  const [loading,setLoading]=useState(true),[error,setError]=useState("");
  const [query,setQuery]=useState("");
+ const [sortBy,setSortBy]=useState("newest");
  async function refresh(silent=false){
   if(!silent)setLoading(true);setError("");
   try{
@@ -31,12 +37,22 @@ export function RealOrdersTable(){
  }
  useEffect(()=>{void refresh();},[]);
  const filtered=orders.filter(o=>[o.order_number,o.customer_name,o.customer_email,o.customer_phone].some(v=>v?.toLocaleLowerCase("cs-CZ").includes(query.toLocaleLowerCase("cs-CZ"))));
+ if(sortBy==="status")filtered.sort((a,b)=>statusRank(a.status)-statusRank(b.status));
  return <section className="admin-table admin-orders" aria-labelledby="admin-orders-heading">
   <div className="admin-orders-heading">
    <div><h3 id="admin-orders-heading">Zákaznické objednávky</h3><p>Otevřete číslo objednávky pro kompletní údaje o zákazníkovi, doručení a platbě.</p></div>
    <button type="button" className="button outline" disabled={loading} onClick={()=>void refresh()} aria-label="Obnovit objednávky" title="Obnovit objednávky"><RefreshCw size={18}/><span>Obnovit</span></button>
   </div>
-  <label className="admin-orders-search"><Search size={18}/><span className="sr-only">Vyhledat objednávku</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Číslo objednávky, jméno, telefon nebo e-mail"/></label>
+  <div className="mb-5 flex flex-wrap items-center gap-3">
+   <label className="admin-orders-search !mb-0 w-full"><Search size={18}/><span className="sr-only">Vyhledat objednávku</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Číslo objednávky, jméno, telefon nebo e-mail"/></label>
+   <label className="flex flex-wrap items-center gap-2 text-sm">
+    Řadit podle
+    <select className="rounded-lg border border-[#d4d2ca] bg-[#fafaf7] px-3 py-2" value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+     <option value="newest">Nejnovější objednávky</option>
+     <option value="status">Stav objednávky</option>
+    </select>
+   </label>
+  </div>
   {error&&<p role="alert">{error}</p>}
   {loading?<p>Načítání objednávek…</p>:<div className="admin-orders-scroll"><table>
    <thead><tr><th>Číslo objednávky</th><th>Vytvořeno</th><th>Zákazník</th><th>Kontakt</th><th>Produkty</th><th>Celkem</th><th>Platba</th><th>Průběh objednávky</th></tr></thead>
