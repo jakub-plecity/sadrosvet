@@ -8,6 +8,8 @@ try{
  await pool.query('REVOKE ALL ON photo_objects FROM anon, authenticated');
  const packetaSchema=await readFile(new URL('../db/migrations/20261110130000_packeta_auto.sql',import.meta.url),'utf8');
  await pool.query(packetaSchema+'\nREVOKE ALL ON packeta_auto_jobs FROM PUBLIC, anon, authenticated;');
+ const trafficSchema=await readFile(new URL('../db/migrations/20261111110000_search_console_traffic.sql',import.meta.url),'utf8');
+ await pool.query(trafficSchema+'\nREVOKE ALL ON search_console_sync, search_console_daily FROM PUBLIC, anon, authenticated;');
  const before=Number((await pool.query('SELECT pg_database_size(current_database()) AS size')).rows[0].size);
  if(before>400*1024*1024)throw Error('Database size requires review before photo import');
  const photos=await verifyPhotoObjects(pool);
