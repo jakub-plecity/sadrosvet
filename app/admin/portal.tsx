@@ -78,6 +78,7 @@ export default function Admin({adminRestricted}:{adminRestricted:boolean}){
   </section>
   <EmailSettings/>
  </TabsContent>
+ <TabsContent value="traffic"><SearchConsoleTraffic/></TabsContent>
  <TabsContent value="editor" forceMount className="data-[state=inactive]:hidden">
   <AdminContentPages/>
  </TabsContent>
@@ -89,4 +90,3 @@ export default function Admin({adminRestricted}:{adminRestricted:boolean}){
  <Dialog open={categoryOpen} onOpenChange={open=>{if(!busy)setCategoryOpen(open);}}><DialogContent><DialogTitle>Přidat kategorii</DialogTitle><DialogDescription>Kategorie bude dostupná při úpravě produktů. Ve veřejném katalogu se zobrazí, jakmile obsahuje zveřejněný produkt.</DialogDescription><form className="editor-form" onSubmit={addCategory}><label className="field">Název kategorie<input autoFocus required maxLength={60} value={categoryName} onChange={e=>setCategoryName(e.target.value)} disabled={busy}/></label>{categoryError&&<p className="error" role="alert">{categoryError}</p>}<div className="editor-footer"><button type="button" className="button outline" disabled={busy} onClick={()=>setCategoryOpen(false)}>Zrušit</button><button className="button blue" disabled={busy}>{busy?"Ukládáme…":"Přidat kategorii"}</button></div></form></DialogContent></Dialog>
  <AlertDialog open={!!deleteTarget} onOpenChange={open=>!busy&&!open&&setDeleteTarget(null)}><AlertDialogContent><AlertDialogTitle>Odstranit {deleteTarget?.name}?</AlertDialogTitle><AlertDialogDescription>Produkt se trvale smaže. Tuto akci nelze vrátit. Pro pouhé skrytí produktu použij archivaci. Dřívější objednávky a uložené fotografie zůstanou zachované.</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel disabled={busy}>Zrušit</AlertDialogCancel><AlertDialogAction style={{color:"#000",backgroundColor:"#fff",border:"1px solid #777",fontWeight:600}} disabled={busy} onClick={e=>{e.preventDefault();void deleteProduct();}}>Trvale odstranit</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></>;
 }
-<TabsContent value="traffic"><SearchConsoleTraffic/></TabsContent>
