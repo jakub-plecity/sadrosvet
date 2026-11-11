@@ -1,7 +1,8 @@
 import {database,guard,readCategories,failure} from "@/lib/server";
 import {z} from "zod";
+import {cachedCategories,invalidatePublicCache} from "@/lib/public-cache";
 export const dynamic="force-dynamic";
-export async function GET(){try{return Response.json({categories:await readCategories()},{headers:{"Cache-Control":"no-store"}});}catch(e){return failure(e);}}
+export async function GET(){try{return Response.json({categories:await cachedCategories()},{headers:{"Cache-Control":"no-store"}});}catch(e){return failure(e);}}
 export async function POST(request:Request){try{
  const denied=await guard(request);if(denied)return denied;
  const input=z.object({name:z.string().trim().min(1).max(60)}).parse(await request.json());
@@ -16,7 +17,7 @@ export async function POST(request:Request){try{
   db.prepare("DELETE FROM settings WHERE key=$1").bind("category-hidden:"+normalized),
   db.prepare("INSERT INTO settings (key,value) VALUES ($1,$2) ON CONFLICT DO NOTHING").bind("category:"+normalized,name)
  ]);
- return Response.json({name},{status:201});
+ invalidatePublicCache("categories");return Response.json({name},{status:201});
 }catch(e){if(e instanceof z.ZodError)return Response.json({error:"Zadej název kategorie o délce 1 až 60 znaků."},{status:400});return failure(e);}}
 
 export async function DELETE(request:Request){try{
@@ -35,5 +36,5 @@ export async function DELETE(request:Request){try{
   db.prepare("DELETE FROM settings WHERE key=$1").bind("category:"+normalized),
   db.prepare("INSERT INTO settings (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value").bind("category-hidden:"+normalized,name)
  ]);
- return Response.json({deleted:name});
+ invalidatePublicCache("categories");return Response.json({deleted:name});
 }catch(e){if(e instanceof z.ZodError)return Response.json({error:"Vyberte platnou kategorii."},{status:400});return failure(e);}}
