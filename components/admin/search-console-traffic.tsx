@@ -57,7 +57,7 @@ export function SearchConsoleTraffic(){
        </LineChart>
       </ResponsiveContainer>
      </div>}
-    <p className="muted">Google může zveřejňovat údaje se zpožděním; synchronizace načítá posledních 90 uzavřených dní.</p>
+    <p className="muted">Údaje za poslední dny mohou být předběžné a Google je může dodatečně upravit. Synchronizace probíhá jednou denně.</p>
    </>}
  </section>;
 }
