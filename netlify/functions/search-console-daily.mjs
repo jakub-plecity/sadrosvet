@@ -39,13 +39,13 @@ export default async function(){
     const property=process.env.GSC_SITE_URL?.trim();
     if(!email||!key||!property)throw new Error("not_configured");
     const token=await accessToken(email,key);
-    const end=new Date();end.setUTCDate(end.getUTCDate()-3);
+    const end=new Date();end.setUTCDate(end.getUTCDate()-1);
     const start=new Date(end);start.setUTCDate(start.getUTCDate()-89);
-    // Exactly one Search Analytics request. Date dimension preserves precise daily totals.
+    // Exactly one Search Analytics request. Include provisional recent data; subsequent daily runs reconcile it.
     const response=await fetch(
       "https://www.googleapis.com/webmasters/v3/sites/"+encodeURIComponent(property)+"/searchAnalytics/query",{
       method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
-      body:JSON.stringify({startDate:date(start),endDate:date(end),dimensions:["date"],rowLimit:25000,dataState:"final"}),
+      body:JSON.stringify({startDate:date(start),endDate:date(end),dimensions:["date"],rowLimit:25000,dataState:"all"}),
       signal:AbortSignal.timeout(30000)
     });
     if(!response.ok)throw new Error("gsc_"+response.status);
