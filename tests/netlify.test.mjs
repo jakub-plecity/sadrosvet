@@ -55,11 +55,12 @@ const output = await build({
   bundle: true, write: false, platform: 'node', format: 'esm',
   plugins: [{name: 'netlify-platform-fixture', setup(b) {
     b.onResolve({filter:/database-pool\.mjs$/},()=>({path:'database-pool',namespace:'fixture'}));
-    b.onResolve({filter: /^(server-only|next\/headers|pg|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
+    b.onResolve({filter: /^(server-only|next\/headers|next\/cache|pg|@netlify\/blobs)$/}, a => ({path: a.path, namespace: 'fixture'}));
     b.onLoad({filter: /.*/, namespace: 'fixture'}, a => ({loader: 'js', contents:
       a.path === 'database-pool' ? `export const getDatabase=()=>({pool:globalThis.__netlifyTest.pool});` :
       a.path === 'pg' ? `export default {Pool:class {}};` :
       a.path === 'server-only' ? '' :
+      a.path === 'next/cache' ? `export function unstable_cache(fn){return fn;} export function revalidateTag(){}` :
       a.path === 'next/headers' ? `export async function cookies(){return {get:()=>globalThis.__netlifyTest.cookie?{value:globalThis.__netlifyTest.cookie}:undefined};}` :
       `export function getStore(){const files=globalThis.__netlifyTest.files;return {
         async set(key,data,options){files.set(key,{data,metadata:options.metadata});},
