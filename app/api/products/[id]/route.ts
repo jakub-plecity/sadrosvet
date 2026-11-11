@@ -1,5 +1,6 @@
 import {database,guard,productInput,failure} from "@/lib/server";
-export async function PUT(request:Request,{params}:{params:Promise<{id:string}>}){try{const denied=await guard(request);if(denied)return denied;const {id}=await params;const p=productInput.parse(await request.json());if(!p.revision)return Response.json({error:"Chybí verze produktu."},{status:400});const r=await database().prepare("UPDATE products SET name=$1,description=$2,detailed_description=$3,dimensions=$4,weight=$5,category=$6,price_minor=$7,stock=$8,image=$9,images=$10,status=$11,sample=$12,revision=revision+1,updated_at=$13 WHERE id=$14 AND revision=$15").bind(p.name,p.description,p.detailedDescription,p.dimensions,p.weight,p.category,p.priceMinor,p.stock,p.images?.[0]??p.image,JSON.stringify(p.images??(p.image?[p.image]:[])),p.status,p.sample,new Date().toISOString(),id,p.revision).run();if(!r.meta.changes)return Response.json({error:"Produkt mezitím upravil jiný uživatel. Obnovte seznam a otevřete jej znovu."},{status:409});return Response.json({id});}catch(e){return failure(e);}}
+import {invalidatePublicCache} from "@/lib/public-cache";
+export async function PUT(request:Request,{params}:{params:Promise<{id:string}>}){try{const denied=await guard(request);if(denied)return denied;const {id}=await params;const p=productInput.parse(await request.json());if(!p.revision)return Response.json({error:"Chybí verze produktu."},{status:400});const r=await database().prepare("UPDATE products SET name=$1,description=$2,detailed_description=$3,dimensions=$4,weight=$5,category=$6,price_minor=$7,stock=$8,image=$9,images=$10,status=$11,sample=$12,revision=revision+1,updated_at=$13 WHERE id=$14 AND revision=$15").bind(p.name,p.description,p.detailedDescription,p.dimensions,p.weight,p.category,p.priceMinor,p.stock,p.images?.[0]??p.image,JSON.stringify(p.images??(p.image?[p.image]:[])),p.status,p.sample,new Date().toISOString(),id,p.revision).run();if(!r.meta.changes)return Response.json({error:"Produkt mezitím upravil jiný uživatel. Obnovte seznam a otevřete jej znovu."},{status:409});invalidatePublicCache("all");return Response.json({id});}catch(e){return failure(e);}}
 export async function DELETE(request:Request,{params}:{params:Promise<{id:string}>}){
  try{
   const denied=await guard(request);if(denied)return denied;
@@ -17,7 +18,7 @@ export async function DELETE(request:Request,{params}:{params:Promise<{id:string
   try{
    const result=await statement.run();
    if(!result.meta.changes)return Response.json({error:"Produkt se změnil. Obnovte seznam."},{status:409});
-   return Response.json({id,archived:body.permanent!==true});
+   invalidatePublicCache("all");return Response.json({id,archived:body.permanent!==true});
   }catch(error){
    // Handle a concurrent order inserted after our reference check.
    if(body.permanent===true&&typeof error==="object"&&error!==null&&"code" in error&&error.code==="23503"){
