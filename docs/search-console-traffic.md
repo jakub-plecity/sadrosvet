@@ -6,7 +6,7 @@ The admin **Návštěvnost** tab reads **cached data only** from `GET /api/admin
 
 Netlify scheduled function `netlify/functions/search-console-daily.mjs` is configured at **05:15 UTC daily**. It claims the UTC date by inserting into `search_console_sync` with a unique date key **before making any Google request**. A second invocation on the same UTC date exits without calling Search Console, even if the first failed. This is a hard cap, rather than a retryable throttle. OAuth token exchange is a separate Google authorization request, not a Search Console data request.
 
-One **Search Analytics** API request obtains 90 days of finalized daily totals (clicks, impressions, CTR, position). The app saves individual date rows in Supabase. 7/28/90-day views are computed locally from that cache; viewing the dashboard cannot trigger an API fetch to Google. Google generally publishes search-performance data with a delay; the query ends three days before the current UTC date. The system intentionally does not make separate queries for searches or individual pages, to respect the one-data-request budget.
+One **Search Analytics** API request obtains 90 days of daily totals including provisional recent days (clicks, impressions, CTR, position). The app saves individual date rows in Supabase. 7/28/90-day views are computed locally from that cache; viewing the dashboard cannot trigger an API fetch to Google. Google generally publishes search-performance data with a delay; the query ends yesterday UTC and uses `dataState: "all"`, so recent values may be provisional and updated by later daily syncs. The system intentionally does not make separate queries for searches or individual pages, to respect the one-data-request budget.
 
 ## Setup required before live sync
 
